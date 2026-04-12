@@ -2,7 +2,6 @@ pandas
 scikit-learn
 matplotlib
 polar
-seborn
 fastapi
 uvicorn
 dvc[all]
