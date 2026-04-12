@@ -1,0 +1,7 @@
+.venv
+README.md
+LICENSE
+todo.md
+.env
+*.pyc
+__pycache__
