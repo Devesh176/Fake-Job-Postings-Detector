@@ -10,14 +10,16 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/init-db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
       interval: 10s
-      retries: 5
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   mlflow:
     build:
       context: .
-      dockerfile: infra/Dockerfile.mlflow   # build locally instead of pulling
+      dockerfile: infra/Dockerfile.mlflow
     ports:
       - "5000:5000"
     volumes:
@@ -76,26 +78,30 @@ services:
         condition: service_healthy
     command: airflow standalone
 
-  # prometheus:
-  #   image: prom/prometheus:latest
-  #   ports:
-  #     - "9090:9090"
-  #   volumes:
-  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-  #     - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
+    depends_on:
+      - api
 
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   ports:
-  #     - "3001:3000"
-  #   volumes:
-  #     - grafana_data:/var/lib/grafana
-  #     - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-  #     - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
-  #   environment:
-  #     GF_SECURITY_ADMIN_PASSWORD: admin
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - prometheus
 
 volumes:
   postgres_data:
   mlflow_data:
-  # grafana_data:
+  grafana_data:
