@@ -1,0 +1,4 @@
+mlflow
+requests
+pandas
+numpy

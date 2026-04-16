@@ -3,6 +3,7 @@ scikit-learn
 matplotlib
 polar
 fastapi
+mlflow
 uvicorn
 dvc[all]
 
