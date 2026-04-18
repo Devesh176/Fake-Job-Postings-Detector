@@ -38,7 +38,6 @@ services:
       retries: 5
 
   api:
-    container_name: web-app
     build:
       context: .
       dockerfile: infra/Dockerfile
@@ -70,14 +69,17 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__API__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+      _AIRFLOW_WWW_USER_USERNAME: airflow
+      _AIRFLOW_WWW_USER_PASSWORD: airflow
       MLFLOW_TRACKING_URI: http://mlflow:5000
     depends_on:
       postgres:
         condition: service_healthy
-      mlflow:
-        condition: service_healthy
-    command: airflow standalone
-
+    command: >
+      bash -c "airflow db init &&
+              airflow users create --username airflow --password airflow --firstname Air --lastname Flow --role Admin --email admin@example.com &&
+              airflow webserver & airflow scheduler"
   prometheus:
     image: prom/prometheus:latest
     ports:
