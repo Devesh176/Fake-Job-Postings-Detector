@@ -1,1 +1,3 @@
-/fake_job_postings.csv
+fake_job_postings.csv
+train.csv
+test.csv
