@@ -37,9 +37,8 @@ stages:
       - src/model/train_dvc.py
     outs:
       - data/processed/model.pkl
-    metrics:
-      - data/processed/metrics.json:
-          cache: false
+      - data/processed/metrics.json
+        
 
   evaluate:
     cmd: python3 src/model/evaluate.py
@@ -48,9 +47,9 @@ stages:
       - data/processed/X_test.npz
       - data/processed/y_test.csv
       - src/model/evaluate.py
-    metrics:
-      - data/processed/eval_metrics.json:
-          cache: false
+    outs:
+      - data/processed/eval_metrics.json
+      
 
   register:
       cmd: python3 src/model/register_dvc.py
