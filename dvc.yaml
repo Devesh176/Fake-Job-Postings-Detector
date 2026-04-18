@@ -1,0 +1,73 @@
+stages:
+  split:
+    cmd: python3 src/pipeline/split_data.py
+    deps:
+      - data/raw/fake_job_postings.csv
+      - src/pipeline/split_data.py
+    outs:
+      - data/raw/train.csv
+      - data/raw/test.csv
+
+  preprocess:
+    cmd: python3 src/pipeline/preprocess.py
+    deps:
+      - data/raw/train.csv
+      - src/pipeline/preprocess.py
+    outs:
+      - data/processed/X_train.npz
+      - data/processed/y_train.csv
+      - data/processed/tfidf_vectorizer.pkl
+      - data/processed/train_processed.csv
+
+  featurize_test:
+    cmd: python3 src/pipeline/featurize_test.py
+    deps:
+      - data/raw/test.csv
+      - data/processed/tfidf_vectorizer.pkl
+      - src/pipeline/featurize_test.py
+    outs:
+      - data/processed/X_test.npz
+      - data/processed/y_test.csv
+
+  train:
+    cmd: python3 src/model/train_dvc.py
+    deps:
+      - data/processed/X_train.npz
+      - data/processed/y_train.csv
+      - src/model/train_dvc.py
+    outs:
+      - data/processed/model.pkl
+    metrics:
+      - data/processed/metrics.json:
+          cache: false
+
+  evaluate:
+    cmd: python3 src/model/evaluate.py
+    deps:
+      - data/processed/model.pkl
+      - data/processed/X_test.npz
+      - data/processed/y_test.csv
+      - src/model/evaluate.py
+    metrics:
+      - data/processed/eval_metrics.json:
+          cache: false
+
+  register:
+      cmd: python3 src/model/register_dvc.py
+      deps:
+        - data/processed/model.pkl
+        - data/processed/tfidf_vectorizer.pkl
+        - data/processed/metrics.json
+        - src/model/register.py
+      outs:
+        - data/production/model.pkl
+        - data/production/tfidf_vectorizer.pkl
+        - data/production/metadata.json
+  
+  baselines:
+    cmd: python3 src/pipeline/eda_stats.py
+    deps:
+      - data/processed/train_processed.csv
+      - src/pipeline/eda_stats.py
+    outs:
+      - data/baselines/training_baseline.json

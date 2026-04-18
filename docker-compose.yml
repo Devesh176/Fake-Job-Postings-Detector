@@ -23,7 +23,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - mlflow_data:/mlflow
+      - ./mlflow_artifacts:/mlflow/artifacts
     command: >
       mlflow server
       --backend-store-uri postgresql://airflow:airflow@postgres/mlflow
