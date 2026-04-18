@@ -1,4 +1,6 @@
 [core]
     remote = local_remote
 ['remote "local_remote"']
-    url = /tmp/dvc-remote
+    url = /home/guest/tools/dvc-remote/tmp/dvc-remote
+
+

@@ -17,7 +17,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code
 COPY src/ ./src/
-COPY data/baselines/ ./data/baselines/
 
 # Expose the port for FastAPI only
 EXPOSE 8000
