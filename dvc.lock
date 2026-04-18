@@ -152,3 +152,19 @@ stages:
       hash: md5
       md5: 8ac79c0c26eccc993536491818441e22
       size: 201658
+  baselines:
+    cmd: python3 src/pipeline/eda_stats.py
+    deps:
+    - path: data/processed/train_processed.csv
+      hash: md5
+      md5: dd50344255fbbec60302419ec8e8bd1c
+      size: 78710506
+    - path: src/pipeline/eda_stats.py
+      hash: md5
+      md5: d32aa58bc21cd549a27c4999a9b4dbea
+      size: 2038
+    outs:
+    - path: data/baselines/training_baseline.json
+      hash: md5
+      md5: 8fb57aca1828b5facf9db05c996655d9
+      size: 12446
