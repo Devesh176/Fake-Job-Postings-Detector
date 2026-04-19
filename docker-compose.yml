@@ -23,11 +23,11 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./mlflow_artifacts:/mlflow/artifacts
+      - ./mlflow_artifacts:/home/guest/tools/Fake-Job-Postings-Detector/mlflow_artifacts
     command: >
       mlflow server
       --backend-store-uri postgresql://airflow:airflow@postgres/mlflow
-      --default-artifact-root /mlflow/artifacts
+      --default-artifact-root /home/guest/tools/Fake-Job-Postings-Detector/mlflow_artifacts
       --host 0.0.0.0
     depends_on:
       postgres:

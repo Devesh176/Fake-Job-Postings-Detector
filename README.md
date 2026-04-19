@@ -77,6 +77,13 @@ mlflow run . -e train --env-manager=local --no-conda --experiment-name fake-job-
 mlflow run . -e evaluate --env-manager=local --no-conda --experiment-name fake-job-detector-exp && \
 mlflow run . -e register --env-manager=local --no-conda --experiment-name fake-job-detector-exp
 ```
+To export mlflow runs data:
+```bash
+export MLFLOW_TRACKING_URI=http://localhost:5000
+export MLFLOW_EXPERIMENT_NAME=fake-job-detector-exp
+
+python3 src/export_mlflow_runs.py
+```
 
 ## DVC commands
 
