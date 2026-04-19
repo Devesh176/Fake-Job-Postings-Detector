@@ -441,7 +441,7 @@ with DAG(
 
     t6 = BashOperator(
         task_id='run_dvc_pipeline',
-        bash_command=f'cd {PROJECT_DIR} && dvc repro --force 2>&1',
+        bash_command=f'cd {PROJECT_DIR} && dvc repro --force && chmod -R 777 /opt/airflow/.dvc/cache 2>&1',
         env={
             'HOME': '/home/airflow',
             'PATH': '/home/airflow/.local/bin:/usr/local/bin:/usr/bin:/bin',
