@@ -111,6 +111,53 @@ airflow users create \
   --email admin@example.com
 ```
 
+## API
+
+The project includes a FastAPI-based web API for real-time fake job posting detection.
+
+### Running the API
+
+Start the API with Docker Compose:
+```bash
+docker compose up --build api
+```
+
+The API will be available at `http://localhost:8000`.
+
+### API Endpoints
+
+- `GET /` - Web UI for job posting classification
+- `GET /health` - Health check
+- `GET /ready` - Readiness check
+- `GET /mode` - Current model serving mode (local or MLflow)
+- `POST /predict` - Classify a job posting (JSON payload with job details)
+- `POST /feedback` - Submit user feedback on a prediction
+- `GET /history` - Recent prediction history
+- `GET /stats` - Prediction statistics
+- `GET /metrics` - Prometheus metrics
+
+### Example Prediction Request
+
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Software Engineer",
+    "description": "We are looking for a skilled software engineer...",
+    "company_profile": "Tech company description",
+    "requirements": "Bachelor degree, 3+ years experience",
+    "employment_type": "Full-time",
+    "has_company_logo": 1,
+    "has_questions": 0,
+    "salary_range": "$80k-$100k",
+    "telecommuting": 0
+  }'
+```
+
+### Database
+
+Predictions are logged to a local SQLite database at `data/inference.db` on the host machine.
+
 ## Notes
 
 - `mlflow` entry points are defined in `MLproject`.
