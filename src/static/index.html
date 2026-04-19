@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobGuard — Fake Job Detector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a24;
+      --border: #2a2a3a;
+      --accent: #6c63ff;
+      --accent2: #ff6584;
+      --green: #00e5a0;
+      --yellow: #ffd166;
+      --red: #ff4d6d;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Background Grid ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ── */
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,15,0.9);
+      backdrop-filter: blur(12px);
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    nav { display: flex; gap: 4px; }
+
+    nav button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    nav button:hover { color: var(--text); background: var(--surface2); }
+    nav button.active { color: var(--accent); background: rgba(108,99,255,0.1); }
+
+    /* ── Pages ── */
+    .page { display: none; padding: 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+    .page.active { display: block; animation: fadeUp 0.3s ease; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Page Hero ── */
+    .page-hero { margin-bottom: 40px; }
+
+    .page-hero h1 {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .page-hero p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 560px;
+      line-height: 1.6;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Form ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    input, textarea, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      padding: 12px 16px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      width: 100%;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+    }
+
+    textarea { resize: vertical; min-height: 100px; }
+    select option { background: var(--surface2); }
+
+    /* ── Toggle ── */
+    .toggle-group { display: flex; gap: 8px; }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .toggle-btn.active {
+      background: rgba(108,99,255,0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #8b83ff);
+      color: white;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(108,99,255,0.3); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
+
+    /* ── Result Panel ── */
+    #result-panel { display: none; }
+    #result-panel.visible { display: block; animation: fadeUp 0.4s ease; }
+
+    .result-verdict {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 28px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      border: 1px solid;
+    }
+
+    .result-verdict.legitimate {
+      background: rgba(0,229,160,0.05);
+      border-color: rgba(0,229,160,0.3);
+    }
+
+    .result-verdict.fraudulent {
+      background: rgba(255,77,109,0.05);
+      border-color: rgba(255,77,109,0.3);
+    }
+
+    .verdict-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .legitimate .verdict-icon { background: rgba(0,229,160,0.15); }
+    .fraudulent .verdict-icon { background: rgba(255,77,109,0.15); }
+
+    .verdict-text h2 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+    }
+
+    .legitimate .verdict-text h2 { color: var(--green); }
+    .fraudulent .verdict-text h2 { color: var(--red); }
+
+    .verdict-text p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+    /* ── Probability Bar ── */
+    .prob-bar-container { margin: 16px 0; }
+    .prob-bar-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; color: var(--muted); }
+    .prob-bar { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+    .prob-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    /* ── Risk Badge ── */
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+
+    .risk-LOW { background: rgba(0,229,160,0.1); color: var(--green); }
+    .risk-MEDIUM { background: rgba(255,209,102,0.1); color: var(--yellow); }
+    .risk-HIGH { background: rgba(255,77,109,0.1); color: var(--red); }
+    .risk-CRITICAL { background: rgba(255,77,109,0.2); color: var(--red); border: 1px solid rgba(255,77,109,0.4); }
+
+    /* ── Signals ── */
+    .signals-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .signal-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border-radius: 8px;
+      font-size: 0.875rem;
+    }
+
+    .signal-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--yellow);
+      flex-shrink: 0;
+    }
+
+    /* ── Feedback ── */
+    .feedback-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--surface2);
+      border-radius: 10px;
+      margin-top: 16px;
+    }
+
+    .feedback-section p { font-size: 0.875rem; color: var(--muted); flex: 1; }
+
+    .feedback-btn {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .feedback-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .feedback-btn.correct:hover { border-color: var(--green); color: var(--green); }
+    .feedback-btn.incorrect:hover { border-color: var(--red); color: var(--red); }
+    .feedback-btn.selected-correct { background: rgba(0,229,160,0.1); border-color: var(--green); color: var(--green); }
+    .feedback-btn.selected-incorrect { background: rgba(255,77,109,0.1); border-color: var(--red); color: var(--red); }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-value { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; }
+    .stat-sub { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── History Table ── */
+    .table-wrapper { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 0.875rem;
+      border-bottom: 1px solid rgba(42,42,58,0.5);
+    }
+
+    tr:hover td { background: rgba(108,99,255,0.03); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .badge-fraud { background: rgba(255,77,109,0.1); color: var(--red); }
+    .badge-legit { background: rgba(0,229,160,0.1); color: var(--green); }
+    .badge-correct { background: rgba(0,229,160,0.1); color: var(--green); }
+    .badge-incorrect { background: rgba(255,77,109,0.1); color: var(--red); }
+    .badge-none { background: var(--surface2); color: var(--muted); }
+
+    /* ── Manual ── */
+    .manual-section { margin-bottom: 32px; }
+    .manual-section h2 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .manual-section p { color: var(--muted); line-height: 1.7; margin-bottom: 12px; }
+
+    .step-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: var(--surface2);
+      border-radius: 10px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: white;
+    }
+
+    .step-content h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+    .step-content p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; margin: 0; }
+
+    .info-box {
+      background: rgba(108,99,255,0.08);
+      border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .warning-box {
+      background: rgba(255,209,102,0.08);
+      border: 1px solid rgba(255,209,102,0.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--yellow);
+    }
+
+    /* ── Loading ── */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 0.875rem;
+      z-index: 1000;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      max-width: 320px;
+    }
+
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header { padding: 16px 20px; }
+      .page { padding: 20px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .page-hero h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      JobGuard
+    </div>
+    <nav>
+      <button class="active" onclick="showPage('analyze')">Analyze</button>
+      <button onclick="showPage('history')">History</button>
+      <button onclick="showPage('manual')">User Manual</button>
+    </nav>
+    <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem;">
+      <div id="mode-indicator" style="width:8px; height:8px; border-radius:50%; background:var(--green);"></div>
+      <span id="mode-label" style="color:var(--muted); font-family:var(--font-mono);">local</span>
+    </div>
+  </header>
+
+  <!-- ── ANALYZE PAGE ── -->
+  <div id="page-analyze" class="page active">
+    <div class="page-hero">
+      <h1>Detect <span class="gradient-text">Fake Jobs</span><br/>Instantly</h1>
+      <p>Paste any job posting details below. Our ML model will analyze it and tell you if it's legitimate or fraudulent.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Job Posting Details</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Job Title *</label>
+          <input type="text" id="title" placeholder="e.g. Senior Software Engineer" />
+        </div>
+        <div class="form-group full">
+          <label>Job Description *</label>
+          <textarea id="description" style="min-height:140px" placeholder="Paste the full job description here..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Company Profile</label>
+          <textarea id="company_profile" placeholder="Company overview, mission, size..." style="min-height:80px"></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Requirements</label>
+          <textarea id="requirements" placeholder="Skills, qualifications, experience needed..." style="min-height:80px"></textarea>
+        </div>
+        
+        <div class="form-group full">
+          <label>Location</label>
+            <input type="text" id="location" placeholder="e.g. New York, NY or Remote" />
+        </div>
+        <div class="form-group full">
+          <label>Benefits</label>
+            <input type="text" id="benefits" placeholder="e.g. Health insurance, 401(k) matching" />
+        </div>
+        <div class="form-group">
+          <label>Salary Range</label>
+          <input type="text" id="salary_range" placeholder="e.g. $80,000 - $100,000" />
+        </div>
+        <div class="form-group">
+          <label>Company Logo Present?</label>
+          <div class="toggle-group">
+            <button class="toggle-btn" id="logo-no" onclick="setToggle('logo', 0)" >No</button>
+            <button class="toggle-btn active" id="logo-yes" onclick="setToggle('logo', 1)">Yes</button>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Screening Questions?</label>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="questions-no" onclick="setToggle('questions', 0)">No</button>
+            <button class="toggle-btn" id="questions-yes" onclick="setToggle('questions', 1)">Yes</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Telecommute?</label>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="telecommute-no" onclick="setToggle('telecommute', 0)">No</button>
+            <button class="toggle-btn" id="telecommute-yes" onclick="setToggle('telecommute', 1)">Yes</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px; align-items: center;">
+        <button class="btn btn-primary" id="analyze-btn" onclick="analyze()">
+          <span id="btn-text">🔍 Analyze Posting</span>
+        </button>
+        <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadExample()" style="margin-left:auto; font-size:0.8rem;">
+          Load Example
+        </button>
+      </div>
+    </div>
+
+    <!-- Result Panel -->
+    <div id="result-panel">
+      <div id="result-verdict" class="result-verdict">
+        <div class="verdict-icon" id="verdict-icon"></div>
+        <div class="verdict-text">
+          <h2 id="verdict-text"></h2>
+          <p id="verdict-sub"></p>
+        </div>
+        <div style="margin-left:auto; text-align:right;">
+          <div id="risk-badge" class="risk-badge"></div>
+          <div style="font-size:0.75rem; color:var(--muted); margin-top:6px; font-family:var(--font-mono)" id="latency-text"></div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="card" style="margin:0">
+          <div class="card-title">📊 Fraud Probability</div>
+          <div style="font-family:var(--font-display); font-size:2.8rem; font-weight:800;" id="prob-value"></div>
+          <div class="prob-bar-container">
+            <div class="prob-bar-label">
+              <span>Legitimate</span>
+              <span>Fraudulent</span>
+            </div>
+            <div class="prob-bar">
+              <div class="prob-bar-fill" id="prob-bar-fill"></div>
+            </div>
+          </div>
+          <div style="font-size:0.8rem; color:var(--muted); margin-top:8px;">
+            Confidence: <span id="confidence-value" style="color:var(--text); font-family:var(--font-mono)"></span>
+          </div>
+        </div>
+
+        <div class="card" style="margin:0">
+          <div class="card-title">⚠️ Risk Signals</div>
+          <div class="signals-list" id="signals-list"></div>
+          <div style="margin-top:12px; font-size:0.8rem; color:var(--muted);">
+            ID: <span id="prediction-id" style="font-family:var(--font-mono); font-size:0.75rem;"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="feedback-section">
+        <p>Was this prediction accurate? Your feedback helps improve the model.</p>
+        <button class="feedback-btn correct" onclick="submitFeedback('correct')">✓ Correct</button>
+        <button class="feedback-btn incorrect" onclick="submitFeedback('incorrect')">✗ Incorrect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HISTORY PAGE ── -->
+  <div id="page-history" class="page">
+    <div class="page-hero">
+      <h1>Prediction <span class="gradient-text">History</span></h1>
+      <p>All analyzed job postings and their results. Use this to review past predictions and track model performance.</p>
+    </div>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Analyzed</div>
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-sub">job postings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fraud Detected</div>
+        <div class="stat-value" style="color:var(--red)" id="stat-fraud">—</div>
+        <div class="stat-sub">flagged as fake</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Latency</div>
+        <div class="stat-value" style="color:var(--accent)" id="stat-latency">—</div>
+        <div class="stat-sub">milliseconds</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Feedback Accuracy</div>
+        <div class="stat-value" style="color:var(--green)" id="stat-accuracy">—</div>
+        <div class="stat-sub">user confirmed</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div class="card-title" style="margin:0">📜 Recent Predictions</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadHistory()">↻ Refresh</button>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Job Title</th>
+              <th>Verdict</th>
+              <th>Fraud Prob.</th>
+              <th>Latency</th>
+              <th>Feedback</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MANUAL PAGE ── -->
+  <div id="page-manual" class="page">
+    <div class="page-hero">
+      <h1>User <span class="gradient-text">Manual</span></h1>
+      <p>Everything you need to know to use JobGuard effectively.</p>
+    </div>
+
+    <div class="manual-section">
+      <h2>🛡️ What is JobGuard?</h2>
+      <p>JobGuard is an AI-powered tool that analyzes job postings and identifies whether they are likely <strong>legitimate</strong> or <strong>fraudulent</strong>. It uses a machine learning model trained on thousands of real and fake job advertisements.</p>
+      <div class="info-box">
+        JobGuard is designed to help job seekers and HR professionals quickly flag suspicious postings. It does not replace human judgment — always do additional verification before sharing personal information with any employer.
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <h2>🔍 How to Analyze a Job Posting</h2>
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h3>Go to the Analyze tab</h3>
+            <p>Click "Analyze" in the top navigation bar to open the job analysis form.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h3>Fill in the job details</h3>
+            <p>Enter the job title and description — these are required. Add as many other details as available (company profile, requirements, employment type, salary). More information = more accurate prediction.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h3>Set the metadata toggles</h3>
+            <p>Toggle whether the posting has a company logo and screening questions. These are strong signals — real companies usually have both.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h3>Click "Analyze Posting"</h3>
+            <p>The result appears within seconds. You will see a verdict (Legitimate or Fraudulent), a fraud probability score, a risk level, and the key warning signals detected.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <h3>Provide feedback</h3>
+            <p>After seeing the result, click "Correct" or "Incorrect" to tell us if the prediction was right. This feedback is used to improve the model over time.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <h2>📊 Understanding the Results</h2>
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num" style="background:linear-gradient(135deg,#00e5a0,#00b07c)">✓</div>
+          <div class="step-content">
+            <h3>Legitimate</h3>
+            <p>The model believes this is a real job posting. A low fraud probability (under 50%) means the posting matches patterns of genuine job advertisements.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:linear-gradient(135deg,#ff4d6d,#c0003a)">!</div>
+          <div class="step-content">
+            <h3>Fraudulent</h3>
+            <p>The model has detected patterns consistent with fake job postings. Exercise extreme caution — do not share personal information, bank details, or pay any fees.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <p style="margin-bottom:12px; color:var(--muted); font-size:0.9rem;"><strong style="color:var(--text)">Risk Levels:</strong></p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; gap:12px;"><span class="risk-badge risk-LOW">LOW</span><span style="color:var(--muted); font-size:0.875rem;">Fraud probability below 30% — likely safe</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span class="risk-badge risk-MEDIUM">MEDIUM</span><span style="color:var(--muted); font-size:0.875rem;">30–60% — some suspicious signals, proceed with caution</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span class="risk-badge risk-HIGH">HIGH</span><span style="color:var(--muted); font-size:0.875rem;">60–80% — likely fraudulent, verify carefully</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span class="risk-badge risk-CRITICAL">CRITICAL</span><span style="color:var(--muted); font-size:0.875rem;">Above 80% — very likely a scam, do not engage</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <h2>⚠️ Common Warning Signs</h2>
+      <div class="warning-box">
+        Watch out for: unrealistic salary offers, requests for personal/banking information upfront, vague job descriptions, no company profile or logo, poor grammar, requests to pay for training or equipment, and jobs that don't require an interview.
+      </div>
+    </div>
+
+    <div class="manual-section">
+      <h2>📜 Viewing History</h2>
+      <p>Click the "History" tab to see all past predictions. You can review fraud probabilities, latency, and whether users confirmed the predictions were correct. This data is stored securely and used to retrain and improve the model.</p>
+    </div>
+
+    <div class="manual-section">
+      <h2>🔒 Privacy</h2>
+      <p>Job posting text you submit is stored in a secure local database. It is used only for model improvement purposes. No data is sent to external servers or cloud platforms.</p>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    const API = '';  // Empty = same origin
+    let currentPredictionId = null;
+    let toggleState = { logo: 1, questions: 0, telecommute: 0 };
+
+    // ── Navigation ─────────────────────────────────────────────────────────
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      event.target.classList.add('active');
+      if (name === 'history') { loadStats(); loadHistory(); }
+    }
+
+    // ── Toggle Buttons ─────────────────────────────────────────────────────
+    function setToggle(field, val) {
+      toggleState[field] = val;
+      document.getElementById(`${field}-yes`).classList.toggle('active', val === 1);
+      document.getElementById(`${field}-no`).classList.toggle('active', val === 0);
+    }
+
+    // ── Load Example ───────────────────────────────────────────────────────
+    function loadExample() {
+      document.getElementById('title').value = 'Work From Home Data Entry Specialist';
+      document.getElementById('description').value = 'Earn $500-$2000 per week working from home! No experience needed. Just fill out simple forms online. Flexible hours. Immediate start. Contact us now to get your starter kit. Huge earning potential. Be your own boss!';
+      document.getElementById('company_profile').value = '';
+      document.getElementById('requirements').value = 'Must be 18+. Internet connection required.';
+      document.getElementById('location').value = 'Part-time';
+      document.getElementById('benefits').value = '';
+      document.getElementById('salary_range').value = '';
+      setToggle('logo', 0);
+      setToggle('questions', 0);
+      setToggle('telecommute', 1);
+      showToast('Example loaded — this is a suspicious posting!', 'warning');
+    }
+
+    function clearForm() {
+      ['title', 'description', 'company_profile', 'requirements', 'salary_range'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('location').value = '';
+      document.getElementById('benefits').value = '';
+      setToggle('logo', 1);
+      setToggle('questions', 0);
+      setToggle('telecommute', 0);
+      document.getElementById('result-panel').classList.remove('visible');
+      currentPredictionId = null;
+    }
+
+    // ── Analyze ────────────────────────────────────────────────────────────
+    async function analyze() {
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+
+      if (!title || !description) {
+        showToast('Please fill in at least Job Title and Description.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('analyze-btn');
+      const btnText = document.getElementById('btn-text');
+      btn.disabled = true;
+      btnText.innerHTML = '<div class="spinner"></div> Analyzing...';
+
+      const payload = {
+        title,
+        description,
+        company_profile: document.getElementById('company_profile').value,
+        requirements: document.getElementById('requirements').value,
+        location: document.getElementById('location').value,
+        benefits: document.getElementById('benefits').value,
+        has_company_logo: toggleState.logo,
+        has_questions: toggleState.questions,
+        telecommuting: toggleState.telecommute,
+        salary_range: document.getElementById('salary_range').value,
+      };
+
+      try {
+        const res = await fetch(`${API}/predict`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Prediction failed');
+        }
+
+        const data = await res.json();
+        currentPredictionId = data.prediction_id;
+        renderResult(data);
+
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btnText.innerHTML = '🔍 Analyze Posting';
+      }
+    }
+
+    function renderResult(data) {
+      const isFraud = data.prediction === 'Fraudulent';
+      const panel = document.getElementById('result-panel');
+      const verdict = document.getElementById('result-verdict');
+      const icon = document.getElementById('verdict-icon');
+      const text = document.getElementById('verdict-text');
+      const sub = document.getElementById('verdict-sub');
+      const probVal = document.getElementById('prob-value');
+      const probFill = document.getElementById('prob-bar-fill');
+      const confVal = document.getElementById('confidence-value');
+      const riskBadge = document.getElementById('risk-badge');
+      const latency = document.getElementById('latency-text');
+      const predId = document.getElementById('prediction-id');
+      const signals = document.getElementById('signals-list');
+
+      verdict.className = 'result-verdict ' + (isFraud ? 'fraudulent' : 'legitimate');
+      icon.textContent = isFraud ? '⚠️' : '✅';
+      text.textContent = isFraud ? 'Likely Fraudulent' : 'Likely Legitimate';
+      sub.textContent = isFraud
+        ? 'This posting shows patterns consistent with fake job advertisements.'
+        : 'This posting appears to be a genuine job advertisement.';
+
+      const pct = Math.round(data.fraud_probability * 100);
+      probVal.textContent = pct + '%';
+      probVal.style.color = isFraud ? 'var(--red)' : 'var(--green)';
+
+      setTimeout(() => {
+        probFill.style.width = pct + '%';
+        probFill.style.background = isFraud
+          ? 'linear-gradient(90deg, var(--yellow), var(--red))'
+          : 'linear-gradient(90deg, var(--accent), var(--green))';
+      }, 100);
+
+      confVal.textContent = Math.round(data.confidence * 100) + '%';
+      riskBadge.textContent = '● ' + data.risk_level;
+      riskBadge.className = 'risk-badge risk-' + data.risk_level;
+      latency.textContent = data.inference_latency_ms.toFixed(1) + 'ms';
+      predId.textContent = data.prediction_id.substring(0, 8) + '...';
+
+      signals.innerHTML = data.key_signals.length
+        ? data.key_signals.map(s => `
+            <div class="signal-item">
+              <div class="signal-dot"></div>
+              <span>${s}</span>
+            </div>`).join('')
+        : '<div class="signal-item"><div class="signal-dot" style="background:var(--green)"></div><span>No major warning signals detected</span></div>';
+
+      // Reset feedback buttons
+      document.querySelectorAll('.feedback-btn').forEach(b => {
+        b.classList.remove('selected-correct', 'selected-incorrect');
+      });
+
+      panel.classList.add('visible');
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── Feedback ───────────────────────────────────────────────────────────
+    async function submitFeedback(type) {
+      if (!currentPredictionId) return;
+
+      try {
+        const res = await fetch(`${API}/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prediction_id: currentPredictionId, feedback: type }),
+        });
+
+        if (!res.ok) throw new Error('Feedback failed');
+
+        document.querySelectorAll('.feedback-btn').forEach(b => {
+          b.classList.remove('selected-correct', 'selected-incorrect');
+        });
+
+        if (type === 'correct') {
+          document.querySelector('.feedback-btn.correct').classList.add('selected-correct');
+        } else {
+          document.querySelector('.feedback-btn.incorrect').classList.add('selected-incorrect');
+        }
+
+        showToast('Thank you! Feedback recorded.', 'success');
+      } catch (err) {
+        showToast('Could not save feedback: ' + err.message, 'error');
+      }
+    }
+
+    // ── History & Stats ────────────────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API}/stats`);
+        const data = await res.json();
+        const s = data.stats;
+
+        document.getElementById('stat-total').textContent = s.total_predictions || 0;
+        document.getElementById('stat-fraud').textContent = s.fraud_count || 0;
+        document.getElementById('stat-latency').textContent =
+          s.avg_latency_ms ? s.avg_latency_ms.toFixed(1) : '—';
+
+        const total_feedback = (s.correct_feedback || 0) + (s.incorrect_feedback || 0);
+        const accuracy = total_feedback > 0
+          ? Math.round((s.correct_feedback / total_feedback) * 100) + '%'
+          : '—';
+        document.getElementById('stat-accuracy').textContent = accuracy;
+
+      } catch (e) { console.error('Stats load failed', e); }
+    }
+
+    async function loadHistory() {
+      const tbody = document.getElementById('history-tbody');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">Loading...</td></tr>';
+
+      try {
+        const res = await fetch(`${API}/history?limit=30`);
+        const data = await res.json();
+
+        if (!data.history.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">No predictions yet. Analyze a job posting to get started.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.history.map(row => {
+          const isFraud = row.prediction === 'Fraudulent';
+          const pct = Math.round((row.fraud_probability || 0) * 100);
+          const feedback = row.user_feedback;
+          const feedbackBadge = feedback === 'correct'
+            ? '<span class="badge badge-correct">✓ Correct</span>'
+            : feedback === 'incorrect'
+            ? '<span class="badge badge-incorrect">✗ Incorrect</span>'
+            : '<span class="badge badge-none">—</span>';
+
+          const time = new Date(row.timestamp).toLocaleString();
+
+          return `<tr>
+            <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${row.title || ''}">${row.title || '—'}</td>
+            <td><span class="badge ${isFraud ? 'badge-fraud' : 'badge-legit'}">${row.prediction}</span></td>
+            <td style="font-family:var(--font-mono)">${pct}%</td>
+            <td style="font-family:var(--font-mono)">${row.inference_latency_ms ? row.inference_latency_ms.toFixed(1) + 'ms' : '—'}</td>
+            <td>${feedbackBadge}</td>
+            <td style="color:var(--muted); font-size:0.8rem;">${time}</td>
+          </tr>`;
+        }).join('');
+
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--red); padding:40px;">Failed to load history. Is the API running?</td></tr>';
+      }
+    }
+
+    // ── Toast ──────────────────────────────────────────────────────────────
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      const colors = { success: 'var(--green)', error: 'var(--red)', warning: 'var(--yellow)', info: 'var(--accent)' };
+      toast.textContent = msg;
+      toast.style.borderColor = colors[type] || 'var(--border)';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // ── Enter key submit ───────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.key === 'Enter') analyze();
+    });
+
+    // ── Load Mode Indicator ────────────────────────────────────────────────
+    async function loadMode() {
+      try {
+        const res = await fetch(`${API}/mode`);
+        const data = await res.json();
+        document.getElementById('mode-label').textContent = data.mode;
+        document.getElementById('mode-indicator').style.background =
+          data.mode === 'local' ? 'var(--green)' : 'var(--accent)';
+      } catch (e) {
+        document.getElementById('mode-label').textContent = 'unknown';
+        document.getElementById('mode-indicator').style.background = 'var(--muted)';
+      }
+    }
+    loadMode();
+  </script>
+</body>
+</html>

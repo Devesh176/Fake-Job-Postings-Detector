@@ -29,6 +29,7 @@ services:
       --backend-store-uri postgresql://airflow:airflow@postgres/mlflow
       --default-artifact-root /home/guest/tools/Fake-Job-Postings-Detector/mlflow_artifacts
       --host 0.0.0.0
+      --allowed-hosts "*"
     depends_on:
       postgres:
         condition: service_healthy
@@ -36,6 +37,30 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 10s
       retries: 5
+
+  # mlflow_model:
+  #   build:
+  #     context: .
+  #     dockerfile: infra/Dockerfile.mlflow
+  #   ports:
+  #     - "5001:5001"
+  #   environment:
+  #     MLFLOW_TRACKING_URI: http://mlflow:5000
+  #   volumes:
+  #     - ./mlflow_artifacts:/home/guest/tools/Fake-Job-Postings-Detector/mlflow_artifacts  # ✅ ADD THIS
+  #   command: >
+  #     mlflow models serve
+  #     -m models:/first_model@production
+  #     --host 0.0.0.0
+  #     --port 5001
+  #     --env-manager=local
+  #   depends_on:
+  #     mlflow:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+  #     interval: 10s
+  #     retries: 5
 
   api:
     build:
@@ -45,15 +70,21 @@ services:
       - "8000:8000"
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      MODEL_SERVE_MODE: ${MODEL_SERVE_MODE:-local}
+      MLFLOW_SERVE_URL: ${MLFLOW_SERVE_URL:-http://mlflow_model:5001/invocations}
     volumes:
+      - ./data:/app/data
       - ./data/baselines:/app/baselines
     depends_on:
       mlflow:
         condition: service_healthy
+      # mlflow_model:
+        # condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       retries: 3
+    
 
   airflow:
     build:

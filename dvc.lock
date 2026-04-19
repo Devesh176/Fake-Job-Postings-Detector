@@ -38,7 +38,7 @@ stages:
       size: 21115489
     - path: data/processed/tfidf_vectorizer.pkl
       hash: md5
-      md5: 8ac79c0c26eccc993536491818441e22
+      md5: 61d6f2c147a8d34de6744e8bdc184e19
       size: 201658
     - path: data/processed/train_processed.csv
       hash: md5
@@ -53,7 +53,7 @@ stages:
     deps:
     - path: data/processed/tfidf_vectorizer.pkl
       hash: md5
-      md5: 8ac79c0c26eccc993536491818441e22
+      md5: 61d6f2c147a8d34de6744e8bdc184e19
       size: 201658
     - path: data/raw/test.csv
       hash: md5
@@ -133,12 +133,8 @@ stages:
       size: 1747854
     - path: data/processed/tfidf_vectorizer.pkl
       hash: md5
-      md5: 8ac79c0c26eccc993536491818441e22
+      md5: 61d6f2c147a8d34de6744e8bdc184e19
       size: 201658
-    - path: src/model/register.py
-      hash: md5
-      md5: 0def15b94336047b82f7aa55d7b45783
-      size: 1385
     outs:
     - path: data/production/metadata.json
       hash: md5
@@ -150,7 +146,7 @@ stages:
       size: 1747854
     - path: data/production/tfidf_vectorizer.pkl
       hash: md5
-      md5: 8ac79c0c26eccc993536491818441e22
+      md5: 61d6f2c147a8d34de6744e8bdc184e19
       size: 201658
   baselines:
     cmd: python3 src/pipeline/eda_stats.py
