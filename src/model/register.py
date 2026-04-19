@@ -4,7 +4,7 @@ import os
 
 MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://localhost:5000')
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-
+MLFLOW_EXPERIMENT_NAME = os.getenv('MLFLOW_EXPERIMENT_NAME', 'fake-job-detector-exp')
 def register_model(min_f1=0.85, min_auc=0.90):
     with open('data/processed/eval_metrics.json') as f:
         metrics = json.load(f)
@@ -12,7 +12,7 @@ def register_model(min_f1=0.85, min_auc=0.90):
     if metrics['f1_fraud'] >= min_f1 and metrics['roc_auc'] >= min_auc:
         # Find the latest run in the experiment
         client = mlflow.tracking.MlflowClient()
-        experiment = client.get_experiment_by_name('fake-job-detector')
+        experiment = client.get_experiment_by_name(MLFLOW_EXPERIMENT_NAME)
         runs = client.search_runs(
             experiment_ids=[experiment.experiment_id],
             order_by=['start_time DESC'],
