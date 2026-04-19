@@ -37,7 +37,7 @@ METRICS_PATH = '/opt/airflow/data/processed/metrics.json'
 PRODUCTION_METADATA_PATH = '/opt/airflow/data/production/metadata.json'
 PROJECT_DIR = '/opt/airflow'
 # API_HEALTH_URL = 'http://api:8000/ready'
-API_HEALTH_URL = 'http://localhost:8000/health'
+API_HEALTH_URL = 'http://api:8000/ready'
 
 import stat
 os.chmod(RETRAIN_DATA_PATH, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
@@ -470,7 +470,7 @@ with DAG(
 
     t10_push = BashOperator(
         task_id='dvc_push',
-        bash_command=f'cd {PROJECT_DIR} && dvc push 2>&1',
+        bash_command=f'cd {PROJECT_DIR} && dvc push -r airflow_remote 2>&1',
         trigger_rule='all_success',
         env={
             'HOME': '/home/airflow',
