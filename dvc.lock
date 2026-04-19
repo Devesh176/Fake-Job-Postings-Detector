@@ -7,6 +7,7 @@ stages:
       hash: md5
       md5: 10d9f3cf4faa78f8ce0932c5ec333c39
       size: 50061601
+      isexec: true
     - path: src/pipeline/split_data.py
       hash: md5
       md5: d7f0aa55566b6117b866c7d1aa74fd07
@@ -34,12 +35,12 @@ stages:
     outs:
     - path: data/processed/X_train.npz
       hash: md5
-      md5: 84a656392110ce078e2ddc9e3c17a02b
-      size: 21115489
+      md5: 9eed909bd1a552f46f9fece0469e7ba2
+      size: 21117735
     - path: data/processed/tfidf_vectorizer.pkl
       hash: md5
-      md5: 61d6f2c147a8d34de6744e8bdc184e19
-      size: 201658
+      md5: 5ff7436543d759b22363ff66edd8b028
+      size: 201651
     - path: data/processed/train_processed.csv
       hash: md5
       md5: dd50344255fbbec60302419ec8e8bd1c
@@ -53,8 +54,8 @@ stages:
     deps:
     - path: data/processed/tfidf_vectorizer.pkl
       hash: md5
-      md5: 61d6f2c147a8d34de6744e8bdc184e19
-      size: 201658
+      md5: 5ff7436543d759b22363ff66edd8b028
+      size: 201651
     - path: data/raw/test.csv
       hash: md5
       md5: c114c00eafd1a1c13d6937a3cbfe594d
@@ -66,8 +67,8 @@ stages:
     outs:
     - path: data/processed/X_test.npz
       hash: md5
-      md5: 2e34a18620a372f4b3e9d7b0c1fa6c4c
-      size: 5286831
+      md5: 026d9cff10fadbd06e067af038653b1d
+      size: 5287183
     - path: data/processed/y_test.csv
       hash: md5
       md5: 7b256001c73677d682251610b2209549
@@ -77,8 +78,8 @@ stages:
     deps:
     - path: data/processed/X_train.npz
       hash: md5
-      md5: 84a656392110ce078e2ddc9e3c17a02b
-      size: 21115489
+      md5: 9eed909bd1a552f46f9fece0469e7ba2
+      size: 21117735
     - path: data/processed/y_train.csv
       hash: md5
       md5: 1ff4f3ab0c11159087d8bb9a8b3d8931
@@ -90,23 +91,23 @@ stages:
     outs:
     - path: data/processed/metrics.json
       hash: md5
-      md5: 8da4345df70146ecdea2d6059de60ecd
-      size: 194
+      md5: fd99f6e761d65ebe6e210f9ad12a886f
+      size: 205
     - path: data/processed/model.pkl
       hash: md5
-      md5: 258e85ce477855923fee1791cfebab2c
-      size: 1747854
+      md5: 39ebd8649a1c0a5bad1ecabdbab39f06
+      size: 1742951
   evaluate:
     cmd: python3 src/model/evaluate.py
     deps:
     - path: data/processed/X_test.npz
       hash: md5
-      md5: 2e34a18620a372f4b3e9d7b0c1fa6c4c
-      size: 5286831
+      md5: 026d9cff10fadbd06e067af038653b1d
+      size: 5287183
     - path: data/processed/model.pkl
       hash: md5
-      md5: 258e85ce477855923fee1791cfebab2c
-      size: 1747854
+      md5: 39ebd8649a1c0a5bad1ecabdbab39f06
+      size: 1742951
     - path: data/processed/y_test.csv
       hash: md5
       md5: 7b256001c73677d682251610b2209549
@@ -118,36 +119,36 @@ stages:
     outs:
     - path: data/processed/eval_metrics.json
       hash: md5
-      md5: 8f2d93c0a2b824bcdafdf4a15be455b5
+      md5: 3fbcbaf5d7cc15be854083e528e467ce
       size: 184
   register:
     cmd: python3 src/model/register_dvc.py
     deps:
     - path: data/processed/metrics.json
       hash: md5
-      md5: 8da4345df70146ecdea2d6059de60ecd
-      size: 194
+      md5: fd99f6e761d65ebe6e210f9ad12a886f
+      size: 205
     - path: data/processed/model.pkl
       hash: md5
-      md5: 258e85ce477855923fee1791cfebab2c
-      size: 1747854
+      md5: 39ebd8649a1c0a5bad1ecabdbab39f06
+      size: 1742951
     - path: data/processed/tfidf_vectorizer.pkl
       hash: md5
-      md5: 61d6f2c147a8d34de6744e8bdc184e19
-      size: 201658
+      md5: 5ff7436543d759b22363ff66edd8b028
+      size: 201651
     outs:
     - path: data/production/metadata.json
       hash: md5
-      md5: f74d0ea1969beabe2fc64fb9a7d5c84e
-      size: 329
+      md5: 9582e2243f8a9ef408cdc721b9afbc21
+      size: 384
     - path: data/production/model.pkl
       hash: md5
-      md5: 258e85ce477855923fee1791cfebab2c
-      size: 1747854
+      md5: 39ebd8649a1c0a5bad1ecabdbab39f06
+      size: 1742951
     - path: data/production/tfidf_vectorizer.pkl
       hash: md5
-      md5: 61d6f2c147a8d34de6744e8bdc184e19
-      size: 201658
+      md5: 5ff7436543d759b22363ff66edd8b028
+      size: 201651
   baselines:
     cmd: python3 src/pipeline/eda_stats.py
     deps:
@@ -162,5 +163,5 @@ stages:
     outs:
     - path: data/baselines/training_baseline.json
       hash: md5
-      md5: 8fb57aca1828b5facf9db05c996655d9
-      size: 12446
+      md5: 223bc65bbc0f2dca55b19eeb5aba38e3
+      size: 12449

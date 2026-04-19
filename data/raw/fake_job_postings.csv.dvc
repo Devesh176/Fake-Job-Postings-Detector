@@ -3,3 +3,4 @@ outs:
   size: 50061601
   hash: md5
   path: fake_job_postings.csv
+  isexec: true
