@@ -96,6 +96,11 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./data:/opt/airflow/data
       - ./src:/opt/airflow/src
+      - ./.dvc:/opt/airflow/.dvc          # DVC config
+      - ./.git:/opt/airflow/.git          # Git repo
+      - ./dvc.yaml:/opt/airflow/dvc.yaml  # DVC pipeline
+      - ./dvc.lock:/opt/airflow/dvc.lock  # DVC lock
+      - ./scripts:/opt/airflow/scripts    # Pipeline scripts
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
@@ -106,6 +111,13 @@ services:
       _AIRFLOW_WWW_USER_USERNAME: airflow
       _AIRFLOW_WWW_USER_PASSWORD: airflow
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      AIRFLOW__SMTP__SMTP_HOST: ${SMTP_HOST}
+      AIRFLOW__SMTP__SMTP_PORT: ${SMTP_PORT}
+      AIRFLOW__SMTP__SMTP_USER: ${SMTP_USER}
+      AIRFLOW__SMTP__SMTP_PASSWORD: ${SMTP_PASSWORD}
+      AIRFLOW__SMTP__SMTP_MAIL_FROM: ${SMTP_FROM}
+      AIRFLOW__SMTP__SMTP_SSL: "False"
+      AIRFLOW__SMTP__SMTP_STARTTLS: "True"
     depends_on:
       postgres:
         condition: service_healthy
