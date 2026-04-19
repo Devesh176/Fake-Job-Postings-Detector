@@ -6,4 +6,4 @@ fastapi
 mlflow
 uvicorn
 dvc[all]
-
+prometheus-client

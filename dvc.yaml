@@ -58,7 +58,6 @@ stages:
         - data/processed/model.pkl
         - data/processed/tfidf_vectorizer.pkl
         - data/processed/metrics.json
-        - src/model/register.py
       outs:
         - data/production/model.pkl
         - data/production/tfidf_vectorizer.pkl
