@@ -35,7 +35,6 @@
       overflow-x: hidden;
     }
 
-    /* ── Background Grid ── */
     body::before {
       content: '';
       position: fixed;
@@ -48,7 +47,6 @@
       z-index: 0;
     }
 
-    /* ── Header ── */
     header {
       position: relative;
       z-index: 10;
@@ -99,7 +97,6 @@
     nav button:hover { color: var(--text); background: var(--surface2); }
     nav button.active { color: var(--accent); background: rgba(108,99,255,0.1); }
 
-    /* ── Pages ── */
     .page { display: none; padding: 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
     .page.active { display: block; animation: fadeUp 0.3s ease; }
 
@@ -108,7 +105,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Page Hero ── */
     .page-hero { margin-bottom: 40px; }
 
     .page-hero h1 {
@@ -134,7 +130,6 @@
       background-clip: text;
     }
 
-    /* ── Cards ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -156,7 +151,6 @@
       gap: 8px;
     }
 
-    /* ── Form ── */
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -195,7 +189,6 @@
     textarea { resize: vertical; min-height: 100px; }
     select option { background: var(--surface2); }
 
-    /* ── Toggle ── */
     .toggle-group { display: flex; gap: 8px; }
 
     .toggle-btn {
@@ -218,7 +211,6 @@
       color: var(--accent);
     }
 
-    /* ── Buttons ── */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -249,7 +241,6 @@
 
     .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
 
-    /* ── Result Panel ── */
     #result-panel { display: none; }
     #result-panel.visible { display: block; animation: fadeUp 0.4s ease; }
 
@@ -298,13 +289,11 @@
 
     .verdict-text p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
 
-    /* ── Probability Bar ── */
     .prob-bar-container { margin: 16px 0; }
     .prob-bar-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; color: var(--muted); }
     .prob-bar { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
     .prob-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
 
-    /* ── Risk Badge ── */
     .risk-badge {
       display: inline-flex;
       align-items: center;
@@ -322,7 +311,6 @@
     .risk-HIGH { background: rgba(255,77,109,0.1); color: var(--red); }
     .risk-CRITICAL { background: rgba(255,77,109,0.2); color: var(--red); border: 1px solid rgba(255,77,109,0.4); }
 
-    /* ── Signals ── */
     .signals-list { display: flex; flex-direction: column; gap: 8px; }
 
     .signal-item {
@@ -343,38 +331,6 @@
       flex-shrink: 0;
     }
 
-    /* ── Feedback ── */
-    .feedback-section {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 20px;
-      background: var(--surface2);
-      border-radius: 10px;
-      margin-top: 16px;
-    }
-
-    .feedback-section p { font-size: 0.875rem; color: var(--muted); flex: 1; }
-
-    .feedback-btn {
-      padding: 8px 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: none;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .feedback-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .feedback-btn.correct:hover { border-color: var(--green); color: var(--green); }
-    .feedback-btn.incorrect:hover { border-color: var(--red); color: var(--red); }
-    .feedback-btn.selected-correct { background: rgba(0,229,160,0.1); border-color: var(--green); color: var(--green); }
-    .feedback-btn.selected-incorrect { background: rgba(255,77,109,0.1); border-color: var(--red); color: var(--red); }
-
-    /* ── Stats Grid ── */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -393,7 +349,6 @@
     .stat-value { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; }
     .stat-sub { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
 
-    /* ── History Table ── */
     .table-wrapper { overflow-x: auto; }
 
     table { width: 100%; border-collapse: collapse; }
@@ -428,11 +383,10 @@
 
     .badge-fraud { background: rgba(255,77,109,0.1); color: var(--red); }
     .badge-legit { background: rgba(0,229,160,0.1); color: var(--green); }
-    .badge-correct { background: rgba(0,229,160,0.1); color: var(--green); }
-    .badge-incorrect { background: rgba(255,77,109,0.1); color: var(--red); }
+    .badge-match { background: rgba(0,229,160,0.1); color: var(--green); }
+    .badge-mismatch { background: rgba(255,77,109,0.1); color: var(--red); }
     .badge-none { background: var(--surface2); color: var(--muted); }
 
-    /* ── Manual ── */
     .manual-section { margin-bottom: 32px; }
     .manual-section h2 {
       font-family: var(--font-display);
@@ -495,7 +449,6 @@
       color: var(--yellow);
     }
 
-    /* ── Loading ── */
     .spinner {
       width: 18px;
       height: 18px;
@@ -507,7 +460,6 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Toast ── */
     #toast {
       position: fixed;
       bottom: 24px;
@@ -526,7 +478,6 @@
 
     #toast.show { transform: translateY(0); opacity: 1; }
 
-    /* ── Responsive ── */
     @media (max-width: 768px) {
       header { padding: 16px 20px; }
       .page { padding: 20px; }
@@ -544,9 +495,9 @@
       JobGuard
     </div>
     <nav>
-      <button class="active" onclick="showPage('analyze')">Analyze</button>
-      <button onclick="showPage('history')">History</button>
-      <button onclick="showPage('manual')">User Manual</button>
+      <button class="active" onclick="showPage('analyze', this)">Analyze</button>
+      <button onclick="showPage('history', this)">History</button>
+      <button onclick="showPage('manual', this)">User Manual</button>
     </nav>
     <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem;">
       <div id="mode-indicator" style="width:8px; height:8px; border-radius:50%; background:var(--green);"></div>
@@ -580,14 +531,21 @@
           <label>Requirements</label>
           <textarea id="requirements" placeholder="Skills, qualifications, experience needed..." style="min-height:80px"></textarea>
         </div>
-        
         <div class="form-group full">
           <label>Location</label>
-            <input type="text" id="location" placeholder="e.g. New York, NY or Remote" />
+          <input type="text" id="location" placeholder="e.g. New York, NY or Remote" />
         </div>
         <div class="form-group full">
           <label>Benefits</label>
-            <input type="text" id="benefits" placeholder="e.g. Health insurance, 401(k) matching" />
+          <input type="text" id="benefits" placeholder="e.g. Health insurance, 401(k) matching" />
+        </div>
+        <div class="form-group full">
+          <label>Your Assessment (Optional)</label>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="label-none" onclick="setLabel(null)">Not Sure</button>
+            <button class="toggle-btn" id="label-legit" onclick="setLabel('Legitimate')">Looks Legitimate</button>
+            <button class="toggle-btn" id="label-fraud" onclick="setLabel('Fraudulent')">Looks Fraudulent</button>
+          </div>
         </div>
         <div class="form-group">
           <label>Salary Range</label>
@@ -596,11 +554,10 @@
         <div class="form-group">
           <label>Company Logo Present?</label>
           <div class="toggle-group">
-            <button class="toggle-btn" id="logo-no" onclick="setToggle('logo', 0)" >No</button>
+            <button class="toggle-btn" id="logo-no" onclick="setToggle('logo', 0)">No</button>
             <button class="toggle-btn active" id="logo-yes" onclick="setToggle('logo', 1)">Yes</button>
           </div>
         </div>
-        
         <div class="form-group">
           <label>Screening Questions?</label>
           <div class="toggle-group">
@@ -668,12 +625,6 @@
           </div>
         </div>
       </div>
-
-      <div class="feedback-section">
-        <p>Was this prediction accurate? Your feedback helps improve the model.</p>
-        <button class="feedback-btn correct" onclick="submitFeedback('correct')">✓ Correct</button>
-        <button class="feedback-btn incorrect" onclick="submitFeedback('incorrect')">✗ Incorrect</button>
-      </div>
     </div>
   </div>
 
@@ -701,9 +652,9 @@
         <div class="stat-sub">milliseconds</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Feedback Accuracy</div>
+        <div class="stat-label">Label Match Rate</div>
         <div class="stat-value" style="color:var(--green)" id="stat-accuracy">—</div>
-        <div class="stat-sub">user confirmed</div>
+        <div class="stat-sub">user label vs model</div>
       </div>
     </div>
 
@@ -720,12 +671,13 @@
               <th>Verdict</th>
               <th>Fraud Prob.</th>
               <th>Latency</th>
-              <th>Feedback</th>
+              <th>Your Label</th>
+              <th>Match?</th>
               <th>Time</th>
             </tr>
           </thead>
           <tbody id="history-tbody">
-            <tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">Loading...</td></tr>
+            <tr><td colspan="7" style="text-align:center; color:var(--muted); padding:40px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -761,7 +713,7 @@
           <div class="step-num">2</div>
           <div class="step-content">
             <h3>Fill in the job details</h3>
-            <p>Enter the job title and description — these are required. Add as many other details as available (company profile, requirements, employment type, salary). More information = more accurate prediction.</p>
+            <p>Enter the job title and description — these are required. Add as many other details as available (company profile, requirements, salary). More information = more accurate prediction.</p>
           </div>
         </div>
         <div class="step">
@@ -774,15 +726,15 @@
         <div class="step">
           <div class="step-num">4</div>
           <div class="step-content">
-            <h3>Click "Analyze Posting"</h3>
-            <p>The result appears within seconds. You will see a verdict (Legitimate or Fraudulent), a fraud probability score, a risk level, and the key warning signals detected.</p>
+            <h3>Optionally set your assessment</h3>
+            <p>Use the "Your Assessment" toggle to mark whether you think the posting looks legitimate or fraudulent. This is saved alongside the prediction for training data quality.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num">5</div>
           <div class="step-content">
-            <h3>Provide feedback</h3>
-            <p>After seeing the result, click "Correct" or "Incorrect" to tell us if the prediction was right. This feedback is used to improve the model over time.</p>
+            <h3>Click "Analyze Posting"</h3>
+            <p>The result appears within seconds — verdict, fraud probability, risk level, and key warning signals detected.</p>
           </div>
         </div>
       </div>
@@ -827,7 +779,7 @@
 
     <div class="manual-section">
       <h2>📜 Viewing History</h2>
-      <p>Click the "History" tab to see all past predictions. You can review fraud probabilities, latency, and whether users confirmed the predictions were correct. This data is stored securely and used to retrain and improve the model.</p>
+      <p>Click the "History" tab to see all past predictions. You can review fraud probabilities, your label vs. the model's verdict, and latency. This data is stored locally and used to retrain and improve the model.</p>
     </div>
 
     <div class="manual-section">
@@ -839,16 +791,17 @@
   <div id="toast"></div>
 
   <script>
-    const API = '';  // Empty = same origin
+    const API = '';
     let currentPredictionId = null;
     let toggleState = { logo: 1, questions: 0, telecommute: 0 };
+    let userLabel = null;
 
     // ── Navigation ─────────────────────────────────────────────────────────
-    function showPage(name) {
+    function showPage(name, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
       document.getElementById('page-' + name).classList.add('active');
-      event.target.classList.add('active');
+      if (btn) btn.classList.add('active');
       if (name === 'history') { loadStats(); loadHistory(); }
     }
 
@@ -859,30 +812,37 @@
       document.getElementById(`${field}-no`).classList.toggle('active', val === 0);
     }
 
+    function setLabel(val) {
+      userLabel = val;
+      document.getElementById('label-none').classList.toggle('active', val === null);
+      document.getElementById('label-legit').classList.toggle('active', val === 'Legitimate');
+      document.getElementById('label-fraud').classList.toggle('active', val === 'Fraudulent');
+    }
+
     // ── Load Example ───────────────────────────────────────────────────────
     function loadExample() {
       document.getElementById('title').value = 'Work From Home Data Entry Specialist';
       document.getElementById('description').value = 'Earn $500-$2000 per week working from home! No experience needed. Just fill out simple forms online. Flexible hours. Immediate start. Contact us now to get your starter kit. Huge earning potential. Be your own boss!';
       document.getElementById('company_profile').value = '';
       document.getElementById('requirements').value = 'Must be 18+. Internet connection required.';
-      document.getElementById('location').value = 'Part-time';
+      document.getElementById('location').value = 'Remote';
       document.getElementById('benefits').value = '';
       document.getElementById('salary_range').value = '';
       setToggle('logo', 0);
       setToggle('questions', 0);
       setToggle('telecommute', 1);
+      setLabel(null);
       showToast('Example loaded — this is a suspicious posting!', 'warning');
     }
 
     function clearForm() {
-      ['title', 'description', 'company_profile', 'requirements', 'salary_range'].forEach(id => {
+      ['title', 'description', 'company_profile', 'requirements', 'salary_range', 'location', 'benefits'].forEach(id => {
         document.getElementById(id).value = '';
       });
-      document.getElementById('location').value = '';
-      document.getElementById('benefits').value = '';
       setToggle('logo', 1);
       setToggle('questions', 0);
       setToggle('telecommute', 0);
+      setLabel(null);
       document.getElementById('result-panel').classList.remove('visible');
       currentPredictionId = null;
     }
@@ -913,6 +873,7 @@
         has_questions: toggleState.questions,
         telecommuting: toggleState.telecommute,
         salary_range: document.getElementById('salary_range').value,
+        user_label: userLabel
       };
 
       try {
@@ -986,42 +947,8 @@
             </div>`).join('')
         : '<div class="signal-item"><div class="signal-dot" style="background:var(--green)"></div><span>No major warning signals detected</span></div>';
 
-      // Reset feedback buttons
-      document.querySelectorAll('.feedback-btn').forEach(b => {
-        b.classList.remove('selected-correct', 'selected-incorrect');
-      });
-
       panel.classList.add('visible');
       panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    // ── Feedback ───────────────────────────────────────────────────────────
-    async function submitFeedback(type) {
-      if (!currentPredictionId) return;
-
-      try {
-        const res = await fetch(`${API}/feedback`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prediction_id: currentPredictionId, feedback: type }),
-        });
-
-        if (!res.ok) throw new Error('Feedback failed');
-
-        document.querySelectorAll('.feedback-btn').forEach(b => {
-          b.classList.remove('selected-correct', 'selected-incorrect');
-        });
-
-        if (type === 'correct') {
-          document.querySelector('.feedback-btn.correct').classList.add('selected-correct');
-        } else {
-          document.querySelector('.feedback-btn.incorrect').classList.add('selected-incorrect');
-        }
-
-        showToast('Thank you! Feedback recorded.', 'success');
-      } catch (err) {
-        showToast('Could not save feedback: ' + err.message, 'error');
-      }
     }
 
     // ── History & Stats ────────────────────────────────────────────────────
@@ -1036,9 +963,9 @@
         document.getElementById('stat-latency').textContent =
           s.avg_latency_ms ? s.avg_latency_ms.toFixed(1) : '—';
 
-        const total_feedback = (s.correct_feedback || 0) + (s.incorrect_feedback || 0);
-        const accuracy = total_feedback > 0
-          ? Math.round((s.correct_feedback / total_feedback) * 100) + '%'
+        // label_match_count / labeled_count (users who provided a label)
+        const accuracy = s.labeled_count > 0
+          ? Math.round((s.label_match_count / s.labeled_count) * 100) + '%'
           : '—';
         document.getElementById('stat-accuracy').textContent = accuracy;
 
@@ -1047,26 +974,35 @@
 
     async function loadHistory() {
       const tbody = document.getElementById('history-tbody');
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">Loading...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:40px;">Loading...</td></tr>';
 
       try {
         const res = await fetch(`${API}/history?limit=30`);
         const data = await res.json();
 
         if (!data.history.length) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">No predictions yet. Analyze a job posting to get started.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:40px;">No predictions yet. Analyze a job posting to get started.</td></tr>';
           return;
         }
 
         tbody.innerHTML = data.history.map(row => {
           const isFraud = row.prediction === 'Fraudulent';
           const pct = Math.round((row.fraud_probability || 0) * 100);
-          const feedback = row.user_feedback;
-          const feedbackBadge = feedback === 'correct'
-            ? '<span class="badge badge-correct">✓ Correct</span>'
-            : feedback === 'incorrect'
-            ? '<span class="badge badge-incorrect">✗ Incorrect</span>'
+          const userLabel = row.user_label;
+
+          // Label badge
+          const labelBadge = userLabel
+            ? `<span class="badge badge-none">${userLabel}</span>`
             : '<span class="badge badge-none">—</span>';
+
+          // Match badge: only shown if user provided a label
+          let matchBadge = '<span class="badge badge-none">—</span>';
+          if (userLabel) {
+            const matches = userLabel === row.prediction;
+            matchBadge = matches
+              ? '<span class="badge badge-match">✓ Match</span>'
+              : '<span class="badge badge-mismatch">✗ Diff</span>';
+          }
 
           const time = new Date(row.timestamp).toLocaleString();
 
@@ -1075,13 +1011,14 @@
             <td><span class="badge ${isFraud ? 'badge-fraud' : 'badge-legit'}">${row.prediction}</span></td>
             <td style="font-family:var(--font-mono)">${pct}%</td>
             <td style="font-family:var(--font-mono)">${row.inference_latency_ms ? row.inference_latency_ms.toFixed(1) + 'ms' : '—'}</td>
-            <td>${feedbackBadge}</td>
+            <td>${labelBadge}</td>
+            <td>${matchBadge}</td>
             <td style="color:var(--muted); font-size:0.8rem;">${time}</td>
           </tr>`;
         }).join('');
 
       } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--red); padding:40px;">Failed to load history. Is the API running?</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--red); padding:40px;">Failed to load history. Is the API running?</td></tr>';
       }
     }
 
@@ -1095,12 +1032,10 @@
       setTimeout(() => toast.classList.remove('show'), 3500);
     }
 
-    // ── Enter key submit ───────────────────────────────────────────────────
     document.addEventListener('keydown', e => {
       if (e.ctrlKey && e.key === 'Enter') analyze();
     });
 
-    // ── Load Mode Indicator ────────────────────────────────────────────────
     async function loadMode() {
       try {
         const res = await fetch(`${API}/mode`);
