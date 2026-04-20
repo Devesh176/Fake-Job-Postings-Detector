@@ -1,0 +1,183 @@
+{
+  "title": "JobGuard — API Health",
+  "uid": "api-health",
+  "tags": ["fake-job-detector", "api"],
+  "timezone": "browser",
+  "refresh": "15s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "API Status",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "up{job=\"fake-job-api\"}",
+        "legendFormat": "API"
+      }],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } }, "type": "value" }
+          ],
+          "thresholds": { "steps": [{ "color": "red", "value": 0 }, { "color": "green", "value": 1 }] }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Request Rate (req/s)",
+      "type": "stat",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "sum(rate(api_request_count_total[5m]))",
+        "legendFormat": "req/s"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "thresholds": { "steps": [{ "color": "green", "value": 0 }] }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Error Rate",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "sum(rate(api_error_count_total[5m])) / (sum(rate(api_request_count_total[5m])) + 0.001)",
+        "legendFormat": "error rate"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.05 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "p95 Inference Latency",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "histogram_quantile(0.95, rate(api_request_latency_seconds_bucket{endpoint=\"/predict\"}[5m])) * 1000",
+        "legendFormat": "p95 latency"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 200 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "SLA Breaches",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "increase(api_sla_breach_count_total[1h])",
+        "legendFormat": "SLA breaches/hr"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "API Uptime",
+      "type": "stat",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "api_uptime_seconds",
+        "legendFormat": "uptime"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": { "steps": [{ "color": "green", "value": 0 }] }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Request Rate Over Time",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(api_request_count_total{status=\"200\"}[5m]))",
+          "legendFormat": "Success"
+        },
+        {
+          "expr": "sum(rate(api_request_count_total{status=\"500\"}[5m]))",
+          "legendFormat": "Error"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Error" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Success" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "title": "Latency Percentiles",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(api_request_latency_seconds_bucket{endpoint=\"/predict\"}[5m])) * 1000",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(api_request_latency_seconds_bucket{endpoint=\"/predict\"}[5m])) * 1000",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(api_request_latency_seconds_bucket{endpoint=\"/predict\"}[5m])) * 1000",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p99" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p50" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      }
+    }
+  ],
+  "schemaVersion": 36
+}
