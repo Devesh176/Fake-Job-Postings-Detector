@@ -54,11 +54,6 @@ FRAUD_RATE = Gauge(
     "model_fraud_prediction_rate",
     "Current fraud prediction rate"
 )
-FEEDBACK_COUNT = Counter(
-    "user_feedback_count_total",
-    "Total user feedback submissions",
-    ["feedback_type"]
-)
 
 # ── App Setup ─────────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -78,10 +73,7 @@ app.add_middleware(
 MODEL_PATH = os.getenv("MODEL_PATH", "data/production/model.pkl")
 VECTORIZER_PATH = os.getenv("VECTORIZER_PATH", "data/production/tfidf_vectorizer.pkl")
 BASELINE_PATH = os.getenv("BASELINE_PATH", "app/baselines/training_baseline.json")
-DB_CONN_STR = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///data/inference.db"
-)
+DB_CONN_STR = os.getenv("DATABASE_URL", "sqlite:///data/inference.db")
 MODEL_SERVE_MODE = os.getenv("MODEL_SERVE_MODE", "local")   # "local" or "mlflow"
 MLFLOW_SERVE_URL = os.getenv("MLFLOW_SERVE_URL", "http://mlflow_model:5001/")
 
@@ -119,8 +111,7 @@ def init_db():
                 fraud_probability REAL NOT NULL,
                 confidence REAL NOT NULL,
                 inference_latency_ms REAL,
-                user_feedback TEXT,
-                feedback_timestamp TEXT
+                user_label TEXT
             )
         """)
         conn.commit()
@@ -175,6 +166,7 @@ class JobPosting(BaseModel):
     telecommuting: Optional[int] = 0
     location: Optional[str] = ""
     benefits: Optional[str] = ""
+    user_label: Optional[str] = None
 
 
 class PredictionResponse(BaseModel):
@@ -187,17 +179,11 @@ class PredictionResponse(BaseModel):
     key_signals: list
 
 
-class FeedbackRequest(BaseModel):
-    prediction_id: str
-    feedback: str  # "correct" or "incorrect"
-
-
 # ── Helper: Feature Engineering ───────────────────────────────────────────────
 def build_features(posting: JobPosting):
     """Build feature vector from a job posting — EXACTLY matches preprocess.py."""
     import scipy.sparse as sp
 
-    # Combine text fields (must match training EXACTLY)
     combined_text = " ".join([
         posting.title or "",
         posting.location or "",
@@ -207,16 +193,13 @@ def build_features(posting: JobPosting):
         posting.benefits or "",
     ])
 
-    # Metadata features (must match logic EXACTLY)
     has_salary = 1 if posting.salary_range else 0
     has_company_profile = 1 if (posting.company_profile and posting.company_profile.strip() != "") else 0
     has_requirements = 1 if (posting.requirements and posting.requirements.strip() != "") else 0
     has_benefits = 1 if (posting.benefits and posting.benefits.strip() != "") else 0
 
-    # TF-IDF
     X_text = vectorizer.transform([combined_text])
 
-    # Metadata (ORDER MUST MATCH preprocess.py)
     X_meta = sp.csr_matrix([[
         int(posting.has_company_logo or 0),
         int(posting.has_questions or 0),
@@ -257,19 +240,17 @@ def get_key_signals(posting: JobPosting, prob: float) -> list:
         signals.append("Very short job description")
     if prob > 0.5 and not signals:
         signals.append("Suspicious text patterns detected")
-    return signals[:4]  # Return top 4 signals
+    return signals[:4]
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 @app.get("/health")
 def health():
-    """Liveness check."""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 
 @app.get("/ready")
 def ready():
-    """Readiness check — only healthy if model is loaded."""
     if MODEL_SERVE_MODE == "local" and (model is None or vectorizer is None):
         raise HTTPException(status_code=503, detail="Model not loaded")
     return {"status": "ready", "model_loaded": True, "mode": MODEL_SERVE_MODE}
@@ -277,7 +258,6 @@ def ready():
 
 @app.get("/mode")
 def get_mode():
-    """Returns the current model serving mode from .env."""
     return {
         "mode": MODEL_SERVE_MODE,
         "mlflow_url": MLFLOW_SERVE_URL if MODEL_SERVE_MODE == "mlflow" else None
@@ -285,7 +265,6 @@ def get_mode():
 
 
 def build_response(posting: JobPosting, fraud_prob: float, duration: float) -> PredictionResponse:
-    """Shared response builder used by both local and mlflow modes."""
     prediction = "Fraudulent" if fraud_prob >= 0.5 else "Legitimate"
     confidence = fraud_prob if fraud_prob >= 0.5 else 1 - fraud_prob
     latency_ms = duration * 1000
@@ -303,15 +282,17 @@ def build_response(posting: JobPosting, fraud_prob: float, duration: float) -> P
                 id, timestamp, title, description, company_profile,
                 requirements, employment_type, has_company_logo,
                 has_questions, salary_range, prediction,
-                fraud_probability, confidence, inference_latency_ms
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                fraud_probability, confidence, inference_latency_ms,
+                user_label
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             prediction_id, datetime.utcnow().isoformat(),
             posting.title, posting.description, posting.company_profile,
             posting.requirements, posting.employment_type,
             posting.has_company_logo, posting.has_questions,
             posting.salary_range, prediction,
-            fraud_prob, confidence, latency_ms
+            fraud_prob, confidence, latency_ms,
+            posting.user_label
         ))
         conn.commit()
         cur.close()
@@ -336,7 +317,6 @@ def build_response(posting: JobPosting, fraud_prob: float, duration: float) -> P
 
 
 def predict_local(posting: JobPosting) -> PredictionResponse:
-    """Predict using locally loaded model from data/production/."""
     if model is None or vectorizer is None:
         raise HTTPException(status_code=503, detail="Local model not loaded. Run DVC pipeline first.")
     start = time.time()
@@ -346,7 +326,6 @@ def predict_local(posting: JobPosting) -> PredictionResponse:
 
 
 def predict_mlflow(posting: JobPosting) -> PredictionResponse:
-    """Predict using MLflow model server at MLFLOW_SERVE_URL."""
     import requests as req
     start = time.time()
     try:
@@ -370,7 +349,6 @@ def predict_mlflow(posting: JobPosting) -> PredictionResponse:
 
 @app.post("/predict", response_model=PredictionResponse)
 def predict(posting: JobPosting, request: Request):
-    """Classify a job posting — mode controlled by MODEL_SERVE_MODE in .env."""
     REQUEST_COUNT.labels(endpoint="/predict", method="POST", status="200").inc()
     try:
         if MODEL_SERVE_MODE == "mlflow":
@@ -385,49 +363,15 @@ def predict(posting: JobPosting, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/feedback")
-def submit_feedback(feedback: FeedbackRequest):
-    """Accept user feedback on a prediction (correct/incorrect)."""
-    if feedback.feedback not in ["correct", "incorrect"]:
-        raise HTTPException(status_code=400, detail="Feedback must be 'correct' or 'incorrect'")
-
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE inference_log
-            SET user_feedback = ?, feedback_timestamp = ?
-            WHERE id = ?
-        """, (feedback.feedback, datetime.utcnow().isoformat(), feedback.prediction_id))
-
-        if cur.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Prediction ID not found")
-
-        conn.commit()
-        cur.close()
-        conn.close()
-
-        FEEDBACK_COUNT.labels(feedback_type=feedback.feedback).inc()
-        logger.info(f"Feedback recorded: {feedback.feedback} for ID {feedback.prediction_id}")
-        return {"status": "feedback recorded", "feedback": feedback.feedback}
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Feedback error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @app.get("/history")
 def get_history(limit: int = 20):
-    """Return recent prediction history."""
     try:
         conn = get_db()
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         cur.execute("""
             SELECT id, timestamp, title, prediction, fraud_probability,
-                   confidence, inference_latency_ms, user_feedback
+                   confidence, inference_latency_ms, user_label
             FROM inference_log
             ORDER BY timestamp DESC
             LIMIT ?
@@ -454,14 +398,15 @@ def get_stats():
                 SUM(CASE WHEN prediction = 'Legitimate' THEN 1 ELSE 0 END) as legitimate_count,
                 AVG(inference_latency_ms) as avg_latency_ms,
                 AVG(fraud_probability) as avg_fraud_probability,
-                SUM(CASE WHEN user_feedback = 'correct' THEN 1 ELSE 0 END) as correct_feedback,
-                SUM(CASE WHEN user_feedback = 'incorrect' THEN 1 ELSE 0 END) as incorrect_feedback
+                SUM(CASE WHEN user_label IS NOT NULL THEN 1 ELSE 0 END) as labeled_count,
+                SUM(CASE WHEN user_label = prediction THEN 1 ELSE 0 END) as label_match_count
             FROM inference_log
         """)
         row = cur.fetchone()
+        columns = [desc[0] for desc in cur.description]
         cur.close()
         conn.close()
-        stats = dict(zip([desc[0] for desc in cur.description], row)) if row else {}
+        stats = dict(zip(columns, row)) if row else {}
         return {"stats": stats}
     except Exception as e:
         logger.error(f"Stats fetch error: {e}")
@@ -470,7 +415,6 @@ def get_stats():
 
 @app.get("/drift-status")
 def drift_status():
-    """Return current drift status based on baselines."""
     if baselines is None:
         return {"status": "baselines_not_loaded", "drift_detected": False}
     return {
@@ -482,7 +426,6 @@ def drift_status():
 
 @app.get("/model-info")
 def model_info():
-    """Return current model metadata."""
     try:
         with open("data/production/metadata.json") as f:
             metadata = json.load(f)
@@ -493,12 +436,10 @@ def model_info():
 
 @app.get("/metrics")
 def metrics():
-    """Prometheus metrics scrape endpoint."""
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/", response_class=HTMLResponse)
 def ui():
-    """Serve the main UI."""
     with open("src/static/index.html", "r") as f:
         return f.read()
