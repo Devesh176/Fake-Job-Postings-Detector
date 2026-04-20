@@ -1,0 +1,99 @@
+global:
+  smtp_smarthost: 'live.smtp.mailtrap.io:2525'
+  smtp_from: 'hello@demomailtrap.co'
+  smtp_auth_username: 'api'
+  smtp_auth_password: 'your_mailtrap_api'
+  smtp_require_tls: true
+  resolve_timeout: 5m
+
+# ── Routing ───────────────────────────────────────────────────────────────────
+route:
+  group_by: ['alertname', 'category']
+  group_wait: 30s          # Wait before sending first alert in group
+  group_interval: 5m       # Wait before sending alerts for new group
+  repeat_interval: 1h      # Resend if alert is still firing after 1 hour
+  receiver: 'gmail-alerts'
+
+  routes:
+    # Critical alerts — send immediately, repeat every 30 minutes
+    - match:
+        severity: critical
+      receiver: 'gmail-alerts'
+      group_wait: 10s
+      repeat_interval: 30m
+
+    # Drift alerts — send to drift-specific receiver
+    - match:
+        category: drift
+      receiver: 'gmail-alerts'
+      group_wait: 1m
+      repeat_interval: 2h
+
+    # Info alerts — lower priority, longer repeat
+    - match:
+        severity: info
+      receiver: 'gmail-alerts'
+      repeat_interval: 6h
+
+# ── Receivers ─────────────────────────────────────────────────────────────────
+receivers:
+  - name: 'gmail-alerts'
+    email_configs:
+      - to: 'me22b176@smail.iitm.ac.in'
+        send_resolved: true
+        headers:
+          Subject: '[JobGuard MLOps] {{ .Status | toUpper }} — {{ .GroupLabels.alertname }}'
+        html: |
+          <!DOCTYPE html>
+          <html>
+          <body style="font-family:sans-serif; max-width:600px; margin:0 auto; color:#333;">
+            {{ if eq .Status "firing" }}
+            <div style="background:{{ if eq (index .Alerts 0).Labels.severity "critical" }}#ff4d6d{{ else }}#ffd166{{ end }};
+                        padding:20px; border-radius:8px 8px 0 0;">
+              <h2 style="color:white; margin:0;">
+                {{ if eq (index .Alerts 0).Labels.severity "critical" }}🚨{{ else }}⚠️{{ end }}
+                Alert Firing: {{ .GroupLabels.alertname }}
+              </h2>
+            </div>
+            {{ else }}
+            <div style="background:#00e5a0; padding:20px; border-radius:8px 8px 0 0;">
+              <h2 style="color:white; margin:0;">✅ Alert Resolved: {{ .GroupLabels.alertname }}</h2>
+            </div>
+            {{ end }}
+
+            <div style="background:#f9f9f9; padding:24px; border:1px solid #eee; border-radius:0 0 8px 8px;">
+              {{ range .Alerts }}
+              <div style="margin-bottom:20px; padding:16px; background:white;
+                          border-radius:8px; border-left:4px solid
+                          {{ if eq .Labels.severity "critical" }}#ff4d6d
+                          {{ else if eq .Labels.severity "warning" }}#ffd166
+                          {{ else }}#6c63ff{{ end }};">
+                <h3 style="margin:0 0 8px;">{{ .Annotations.summary }}</h3>
+                <p style="color:#666; margin:0 0 12px;">{{ .Annotations.description }}</p>
+                <table style="width:100%; font-size:13px;">
+                  <tr><td style="color:#999;">Severity</td><td><strong>{{ .Labels.severity }}</strong></td></tr>
+                  <tr><td style="color:#999;">Category</td><td>{{ .Labels.category }}</td></tr>
+                  <tr><td style="color:#999;">Started</td><td>{{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}</td></tr>
+                </table>
+              </div>
+              {{ end }}
+
+              <hr style="border:none; border-top:1px solid #eee; margin:20px 0;">
+              <p style="color:#999; font-size:12px;">
+                This is an automated alert from the <strong>Fake Job Detector MLOps</strong> pipeline.<br>
+                View dashboards: <a href="http://localhost:3001">Grafana</a> |
+                <a href="http://localhost:9090">Prometheus</a> |
+                <a href="http://localhost:8080">Airflow</a>
+              </p>
+            </div>
+          </body>
+          </html>
+
+# ── Inhibit Rules ─────────────────────────────────────────────────────────────
+# Suppress warnings if critical alert is already firing for same component
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['category']

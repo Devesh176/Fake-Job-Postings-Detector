@@ -1,0 +1,178 @@
+{
+  "title": "JobGuard — Drift Monitoring",
+  "uid": "drift-monitoring",
+  "tags": ["fake-job-detector", "drift"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Drift Status",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "expr": "drift_detected",
+        "legendFormat": "drift"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "text": "NO DRIFT", "color": "green" }, "1": { "text": "DRIFT DETECTED", "color": "red" } }, "type": "value" }
+          ],
+          "thresholds": { "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 1 }] }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "PSI — employment_type",
+      "type": "gauge",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "expr": "drift_psi_score{feature=\"employment_type\"}",
+        "legendFormat": "PSI"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 0.5,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 0.2 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "PSI — has_company_logo",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "expr": "drift_psi_score{feature=\"has_company_logo\"}",
+        "legendFormat": "PSI"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 0.5,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 0.2 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "PSI — has_questions",
+      "type": "gauge",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "expr": "drift_psi_score{feature=\"has_questions\"}",
+        "legendFormat": "PSI"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 0.5,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 0.2 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "PSI Scores Over Time",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "drift_psi_score",
+          "legendFormat": "{{ feature }}"
+        },
+        {
+          "expr": "vector(0.2)",
+          "legendFormat": "Threshold (0.2)"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Threshold (0.2)" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } },
+              { "id": "custom.lineStyle", "value": { "dash": [10, 10], "fill": "dash" } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "title": "Fraud Rate Deviation from Baseline",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "model_fraud_rate_current",
+          "legendFormat": "Current Fraud Rate"
+        },
+        {
+          "expr": "vector(0.048)",
+          "legendFormat": "Training Baseline (4.8%)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit" },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Training Baseline (4.8%)" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } },
+              { "id": "custom.lineStyle", "value": { "dash": [10, 10], "fill": "dash" } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "title": "Total Drift Checks",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 12, "w": 6, "h": 8 },
+      "targets": [{
+        "expr": "drift_check_count_total",
+        "legendFormat": "checks"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "blue", "value": 0 }] }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Drift Reference",
+      "type": "text",
+      "gridPos": { "x": 18, "y": 12, "w": 6, "h": 8 },
+      "options": {
+        "content": "## PSI Interpretation\n\n| PSI Value | Meaning |\n|-----------|--------|\n| < 0.1 | No change ✓ |\n| 0.1 – 0.2 | Minor drift ⚠️ |\n| > 0.2 | Significant drift 🚨 |\n\nDrift is checked daily by the **fake_job_drift_monitoring** Airflow DAG.\n\nIf drift is detected, trigger the **fake_job_retraining_pipeline** DAG.",
+        "mode": "markdown"
+      }
+    }
+  ],
+  "schemaVersion": 36
+}

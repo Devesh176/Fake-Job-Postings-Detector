@@ -1,10 +1,155 @@
 groups:
-  - name: basic_alerts
+  - name: fake_job_detector_alerts
+    interval: 30s
     rules:
-      - alert: ServiceDown
-        expr: up == 0
+
+      # API Health Alerts 
+
+      - alert: HighErrorRate
+        expr: >
+          rate(api_error_count_total[5m]) /
+          (rate(api_request_count_total[5m]) + 0.001) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          category: api_health
+        annotations:
+          summary: "API error rate exceeded 5%"
+          description: >
+            The API error rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+            This exceeds the 5% threshold defined in the project guidelines.
+            Investigate the /predict endpoint logs immediately.
+
+      - alert: APIDown
+        expr: up{job="fake-job-api"} == 0
         for: 1m
         labels:
           severity: critical
+          category: api_health
         annotations:
-          summary: "Service {{ $labels.instance }} is down"
+          summary: "Fake Job Detector API is down"
+          description: >
+            The FastAPI service has been unreachable for more than 1 minute.
+            Check the api container: docker logs fake-job-postings-detector-api-1
+
+      - alert: HighInferenceLatency
+        expr: >
+          histogram_quantile(0.95,
+            rate(api_request_latency_seconds_bucket{endpoint="/predict"}[5m])
+          ) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "p95 inference latency exceeded 200ms SLA"
+          description: >
+            The 95th percentile inference latency is
+            {{ $value | humanizeDuration }} which exceeds the 200ms SLA.
+            Current p95: {{ $value }}s
+
+      - alert: SLABreachRateHigh
+        expr: rate(api_sla_breach_count_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "SLA breaches occurring frequently"
+          description: >
+            More than 0.1 SLA breaches per second over the last 10 minutes.
+            Requests are consistently exceeding the 200ms latency target.
+
+      # Data Drift Alerts
+
+      - alert: DataDriftDetected
+        expr: drift_psi_score > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          category: drift
+        annotations:
+          summary: "Data drift detected on feature {{ $labels.feature }}"
+          description: >
+            PSI score for feature '{{ $labels.feature }}' is {{ $value }},
+            which exceeds the drift threshold of 0.2.
+            Consider triggering the retraining DAG in Airflow.
+
+      - alert: DriftConfirmed
+        expr: drift_detected == 1
+        for: 10m
+        labels:
+          severity: critical
+          category: drift
+        annotations:
+          summary: "Data drift confirmed — model retraining recommended"
+          description: >
+            Drift has been confirmed across one or more features for over 10 minutes.
+            The model may be producing unreliable predictions.
+            Action: Trigger fake_job_retraining_pipeline DAG in Airflow.
+
+      - alert: FraudRateAnomaly
+        expr: >
+          abs(model_fraud_rate_current - 0.048) > 0.15
+        for: 10m
+        labels:
+          severity: warning
+          category: drift
+        annotations:
+          summary: "Fraud prediction rate anomaly detected"
+          description: >
+            The current fraud prediction rate is {{ $value }},
+            which deviates significantly from the training baseline of ~4.8%.
+            This may indicate concept drift or data quality issues.
+
+      # Model Performance Alerts
+
+      - alert: LowPredictionConfidence
+        expr: >
+          histogram_quantile(0.5,
+            rate(model_prediction_confidence_bucket[10m])
+          ) < 0.6
+        for: 10m
+        labels:
+          severity: warning
+          category: model_performance
+        annotations:
+          summary: "Median prediction confidence is low"
+          description: >
+            The median model confidence score has dropped below 60%.
+            This may indicate the model is uncertain about recent inputs,
+            possibly due to distribution shift. Current median: {{ $value }}
+
+      - alert: NoRecentPredictions
+        expr: rate(model_prediction_count_total[30m]) == 0
+        for: 30m
+        labels:
+          severity: info
+          category: model_performance
+        annotations:
+          summary: "No predictions made in the last 30 minutes"
+          description: >
+            The model has not made any predictions in the last 30 minutes.
+            This may indicate the API is idle or there is an issue with the frontend.
+
+      # Infrastructure Alerts
+
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Prometheus is down"
+          description: "Prometheus monitoring is unavailable."
+
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Grafana dashboard is down"
+          description: "Grafana visualization service is unavailable."

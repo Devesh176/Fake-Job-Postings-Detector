@@ -129,6 +129,20 @@ services:
               --email admin@example.com || true &&
               airflow webserver & airflow scheduler"
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    # environment:
+    #   ALERT_FROM_EMAIL: ${ALERT_FROM_EMAIL}
+    #   GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD}
+    #   ALERT_TO_EMAIL: ${ALERT_TO_EMAIL}
+
   prometheus:
     image: prom/prometheus:latest
     ports:
@@ -138,6 +152,7 @@ services:
       - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
     depends_on:
       - api
+      - alertmanager
 
   grafana:
     image: grafana/grafana:latest
@@ -149,8 +164,10 @@ services:
       - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
-    depends_on:
-      - prometheus
+      # GF_SMTP_ENABLED: "true"
+      # GF_SMTP_HOST: "smtp.gmail.com:587"
+      # GF_SMTP_USER: ${ALERT_FROM_EMAIL}
+      # GF_SMTP_PASSWORD: ${GMAIL_APP_PASSWORD}
 
 volumes:
   postgres_data:

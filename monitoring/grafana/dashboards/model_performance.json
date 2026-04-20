@@ -1,0 +1,192 @@
+{
+  "title": "JobGuard — Model Performance",
+  "uid": "model-performance",
+  "tags": ["fake-job-detector", "model"],
+  "timezone": "browser",
+  "refresh": "15s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Predictions",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "sum(model_prediction_count_total)",
+        "legendFormat": "total"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "color": "blue", "value": 0 }] }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Fraud Predictions",
+      "type": "stat",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "model_prediction_count_total{prediction=\"Fraudulent\"}",
+        "legendFormat": "Fraudulent"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "red", "mode": "fixed" },
+          "thresholds": { "steps": [{ "color": "red", "value": 0 }] }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Legitimate Predictions",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "model_prediction_count_total{prediction=\"Legitimate\"}",
+        "legendFormat": "Legitimate"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "green", "mode": "fixed" },
+          "thresholds": { "steps": [{ "color": "green", "value": 0 }] }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Current Fraud Rate",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "expr": "model_fraud_rate_current",
+        "legendFormat": "fraud rate"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 0.2 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Model Serve Mode",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "expr": "model_serve_mode",
+        "legendFormat": "mode"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "text": "MLflow", "color": "purple" }, "1": { "text": "Local", "color": "green" } }, "type": "value" }
+          ],
+          "thresholds": { "steps": [{ "color": "green", "value": 0 }] }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Fraud Rate Over Time (Rolling 100)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [{
+        "expr": "model_fraud_rate_current",
+        "legendFormat": "Fraud Rate"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "red", "value": 0.2 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Prediction Confidence Distribution",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(model_prediction_confidence_bucket[5m]))",
+          "legendFormat": "p50 confidence"
+        },
+        {
+          "expr": "histogram_quantile(0.25, rate(model_prediction_confidence_bucket[5m]))",
+          "legendFormat": "p25 confidence"
+        },
+        {
+          "expr": "histogram_quantile(0.75, rate(model_prediction_confidence_bucket[5m]))",
+          "legendFormat": "p75 confidence"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1 }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Inference Latency Distribution",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(model_inference_latency_ms_bucket[5m]))",
+          "legendFormat": "p50 ms"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(model_inference_latency_ms_bucket[5m]))",
+          "legendFormat": "p95 ms"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(model_inference_latency_ms_bucket[5m]))",
+          "legendFormat": "p99 ms"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p99 ms" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "title": "User Feedback",
+      "type": "piechart",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "user_feedback_count_total{feedback_type=\"correct\"}",
+          "legendFormat": "Correct"
+        },
+        {
+          "expr": "user_feedback_count_total{feedback_type=\"incorrect\"}",
+          "legendFormat": "Incorrect"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Correct" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Incorrect" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      }
+    }
+  ],
+  "schemaVersion": 36
+}
