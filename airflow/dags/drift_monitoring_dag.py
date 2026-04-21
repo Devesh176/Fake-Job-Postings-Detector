@@ -328,20 +328,22 @@ with DAG(
     t4_build = PythonOperator(task_id='build_drift_alert_email', python_callable=build_drift_alert_email)
     t4_alert = EmailOperator(
         task_id='send_drift_alert',
-        to='{{ var.value.get("alert_email", "me22b176@smail.iitm.ac.in") }}',
+        # Cleanly pulls the dynamically injected variable
+        to='{{ var.value.get("alert_email") }}', 
         subject='[URGENT] JobGuard Data Drift Detected — {{ ds }}',
         html_content="{{ ti.xcom_pull(task_ids='build_drift_alert_email', key='alert_email_body') }}",
-        conn_id='smtp_mailtrap',
+        # conn_id removed here 
     )
 
     # System Healthy Route
     t4_build_heartbeat = PythonOperator(task_id='build_heartbeat_email', python_callable=build_heartbeat_email)
+    
     t4_heartbeat = EmailOperator(
         task_id='send_heartbeat_email',
-        to='{{ var.value.get("alert_email", "me22b176@smail.iitm.ac.in") }}',
+        to='{{ var.value.get("alert_email") }}',
         subject='[INFO] JobGuard Daily Summary — System Healthy — {{ ds }}',
         html_content="{{ ti.xcom_pull(task_ids='build_heartbeat_email', key='heartbeat_email_body') }}",
-        conn_id='smtp_mailtrap',
+        # conn_id removed here 
     )
 
     t5 = PythonOperator(

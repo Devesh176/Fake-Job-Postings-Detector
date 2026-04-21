@@ -111,22 +111,28 @@ services:
       - ./dvc.lock:/opt/airflow/dvc.lock  # DVC lock
       - ./scripts:/opt/airflow/scripts    # Pipeline scripts
     environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
-      AIRFLOW__API__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "True"
-      _AIRFLOW_WWW_USER_USERNAME: airflow
-      _AIRFLOW_WWW_USER_PASSWORD: airflow
-      MLFLOW_TRACKING_URI: http://mlflow:5000
-      AIRFLOW__SMTP__SMTP_HOST: ${SMTP_HOST}
-      AIRFLOW__SMTP__SMTP_PORT: ${SMTP_PORT}
-      AIRFLOW__SMTP__SMTP_USER: ${SMTP_USER}
-      AIRFLOW__SMTP__SMTP_PASSWORD: ${SMTP_PASSWORD}
-      AIRFLOW__SMTP__SMTP_MAIL_FROM: ${SMTP_FROM}
-      AIRFLOW__SMTP__SMTP_SSL: "False"
-      AIRFLOW__SMTP__SMTP_STARTTLS: "True"
+          # Core Airflow Settings 
+          AIRFLOW__CORE__EXECUTOR: LocalExecutor
+          AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
+          AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+          AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+          AIRFLOW__API__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+          AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "True"
+          _AIRFLOW_WWW_USER_USERNAME: airflow
+          _AIRFLOW_WWW_USER_PASSWORD: airflow
+          MLFLOW_TRACKING_URI: http://mlflow:5000
+          
+          # Global Gmail SMTP Configuration 
+          AIRFLOW__SMTP__SMTP_HOST: smtp.gmail.com
+          AIRFLOW__SMTP__SMTP_PORT: 587
+          AIRFLOW__SMTP__SMTP_USER: ${SMTP_USERNAME}
+          AIRFLOW__SMTP__SMTP_PASSWORD: ${SMTP_PASSWORD}
+          AIRFLOW__SMTP__SMTP_MAIL_FROM: "JobGuard Airflow <${SMTP_USERNAME}>"
+          AIRFLOW__SMTP__SMTP_SSL: "False"
+          AIRFLOW__SMTP__SMTP_STARTTLS: "True"
+          
+          # Dynamic DAG Variables 
+          AIRFLOW_VAR_ALERT_EMAIL: ${ALERT_EMAIL}
     depends_on:
       postgres:
         condition: service_healthy
