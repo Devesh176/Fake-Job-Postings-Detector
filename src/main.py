@@ -26,12 +26,22 @@ import requests as req
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 logger = logging.getLogger(__name__)
 
-# Prometheus Metrics
-REQUEST_COUNT = Counter("api_request_count_total", "Total API requests", ["endpoint", "method", "status"])
+# --- API Health Dashboard Metrics ---
+REQUEST_COUNT = Counter("api_request_count", "Total API requests", ["endpoint", "method", "status"])
+ERROR_COUNT = Counter("api_error_count", "Total API errors")
 REQUEST_LATENCY = Histogram("api_request_latency_seconds", "API request latency", ["endpoint"], buckets=[0.01, 0.05, 0.1, 0.2, 0.5, 1.0])
-ERROR_COUNT = Counter("api_error_count_total", "Total API errors")
+SLA_BREACH_COUNT = Counter("api_sla_breach_count", "API requests exceeding SLA")
+API_UPTIME = Gauge("api_uptime_seconds", "Total seconds API has been running")
+
+# --- Model Performance Dashboard Metrics ---
+PREDICTION_COUNT = Counter("model_prediction_count", "Total predictions made", ["prediction"])
+FRAUD_RATE = Gauge("model_fraud_rate_current", "Current running average of fraud predictions")
 PREDICTION_CONFIDENCE = Histogram("model_prediction_confidence", "Model prediction confidence scores", buckets=[0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99])
-FRAUD_RATE = Gauge("model_fraud_prediction_rate", "Current fraud prediction rate")
+INFERENCE_LATENCY = Histogram("model_inference_latency_ms", "Actual model scoring latency", buckets=[10, 50, 100, 200, 500, 1000])
+SERVE_MODE_GAUGE = Gauge("model_serve_mode", "Current active model backend (0=MLflow, 1=Local)")
+USER_FEEDBACK = Counter("user_feedback_count", "User feedback submitted via UI", ["feedback_type"])
+
+# App Setup
 
 # App Setup
 app = FastAPI(title="Fake Job Posting Detector", description="Detects fraudulent job postings using ML", version="1.0.0")
@@ -272,6 +282,13 @@ def predict(posting: JobPosting):
         else:
             if model is None: raise HTTPException(status_code=503, detail="Local model not loaded")
             fraud_prob = float(model.predict_proba(X)[0][1])
+        
+        pred_label = "Fraudulent" if fraud_prob >= 0.5 else "Legitimate"
+        PREDICTION_COUNT.labels(prediction=pred_label).inc()
+        confidence = fraud_prob if fraud_prob >= 0.5 else (1.0 - fraud_prob)
+        PREDICTION_CONFIDENCE.observe(confidence)
+        latency_ms = (time.time() - start) * 1000
+        INFERENCE_LATENCY.observe(latency_ms)
             
         return build_response(posting, fraud_prob, time.time() - start)
         
