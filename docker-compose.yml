@@ -84,6 +84,15 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       retries: 3
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./src/static:/usr/share/nginx/html:ro
+    depends_on:
+      - api
     
 
   airflow:

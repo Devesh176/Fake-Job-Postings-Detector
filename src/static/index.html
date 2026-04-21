@@ -791,10 +791,57 @@
   <div id="toast"></div>
 
   <script>
-    const API = '';
+    // Ensure the API points to your backend now that they are decoupled
+    const API = 'http://localhost:8000'; 
     let currentPredictionId = null;
     let toggleState = { logo: 1, questions: 0, telecommute: 0 };
     let userLabel = null;
+
+    // Add this HTML snippet dynamically right after the <div class="signals-list"> in your result-panel HTML
+    // It creates the feedback buttons.
+    document.addEventListener("DOMContentLoaded", () => {
+        const signalsCard = document.getElementById('signals-list').parentElement;
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.innerHTML = `
+            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+                <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 8px;">Was this prediction correct?</div>
+                <div style="display: flex; gap: 8px;" id="feedback-buttons">
+                    <button class="btn btn-ghost btn-sm" onclick="submitFeedback('Legitimate')">✅ It's Legitimate</button>
+                    <button class="btn btn-ghost btn-sm" onclick="submitFeedback('Fraudulent')">⚠️ It's Fraudulent</button>
+                </div>
+                <div id="feedback-thanks" style="display:none; color:var(--green); font-size:0.85rem; margin-top:8px;">
+                    Thanks! Feedback logged for model retraining.
+                </div>
+            </div>
+        `;
+        signalsCard.appendChild(feedbackDiv);
+    });
+
+    // ── Feedback Loop ──────────────────────────────────────────────────────
+    async function submitFeedback(label) {
+        if (!currentPredictionId) return;
+        
+        try {
+            const res = await fetch(`${API}/feedback`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prediction_id: currentPredictionId,
+                    correct_label: label
+                }),
+            });
+
+            if (res.ok) {
+                document.getElementById('feedback-buttons').style.display = 'none';
+                document.getElementById('feedback-thanks').style.display = 'block';
+                showToast("Feedback submitted successfully!", "success");
+            } else {
+                throw new Error("Failed to save feedback");
+            }
+        } catch (err) {
+            showToast(err.message, "error");
+        }
+    }
 
     // ── Navigation ─────────────────────────────────────────────────────────
     function showPage(name, btn) {
@@ -890,6 +937,13 @@
 
         const data = await res.json();
         currentPredictionId = data.prediction_id;
+        
+        // Reset feedback UI state for new prediction
+        const fButtons = document.getElementById('feedback-buttons');
+        const fThanks = document.getElementById('feedback-thanks');
+        if(fButtons) fButtons.style.display = 'flex';
+        if(fThanks) fThanks.style.display = 'none';
+
         renderResult(data);
 
       } catch (err) {
@@ -939,6 +993,9 @@
       latency.textContent = data.inference_latency_ms.toFixed(1) + 'ms';
       predId.textContent = data.prediction_id.substring(0, 8) + '...';
 
+      // Keep feedback div if it exists, replace only signals
+      const feedbackDivHtml = signals.nextElementSibling ? signals.nextElementSibling.outerHTML : '';
+      
       signals.innerHTML = data.key_signals.length
         ? data.key_signals.map(s => `
             <div class="signal-item">
@@ -963,7 +1020,6 @@
         document.getElementById('stat-latency').textContent =
           s.avg_latency_ms ? s.avg_latency_ms.toFixed(1) : '—';
 
-        // label_match_count / labeled_count (users who provided a label)
         const accuracy = s.labeled_count > 0
           ? Math.round((s.label_match_count / s.labeled_count) * 100) + '%'
           : '—';
@@ -990,12 +1046,10 @@
           const pct = Math.round((row.fraud_probability || 0) * 100);
           const userLabel = row.user_label;
 
-          // Label badge
           const labelBadge = userLabel
             ? `<span class="badge badge-none">${userLabel}</span>`
             : '<span class="badge badge-none">—</span>';
 
-          // Match badge: only shown if user provided a label
           let matchBadge = '<span class="badge badge-none">—</span>';
           if (userLabel) {
             const matches = userLabel === row.prediction;
