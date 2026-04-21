@@ -7,3 +7,4 @@ mlflow
 uvicorn
 dvc[all]
 prometheus-client
+cryptography>=41.0.0

@@ -19,6 +19,7 @@ This repo contains a end to end fake job posting detection pipeline using DVC, M
    ```
    Modify the .env with necessary configuration and information
    ```dotenv
+    AIRFLOW_UID= # run echo $(id -u)
     AIRFLOW_SECRET_KEY=your_secret_key_here
     AIRFLOW_FERNET_KEY=your_secret_key_here
     # export MLFLOW_TRACKING_URI=http://localhost:5000

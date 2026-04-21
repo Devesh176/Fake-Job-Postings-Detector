@@ -7,3 +7,8 @@ todo.md
 .venv/
 .env
 mlflow_artifacts/
+monitoring/alertmanager.yml
+*.zip
+data/raw/inference_labeled.csv
+data/raw/fake_job_postings_retrain.csv
+data/**/*.bak
