@@ -1,7 +1,7 @@
 global:
-  smtp_smarthost: 'live.smtp.mailtrap.io:2525'
-  smtp_from: 'hello@demomailtrap.co'
-  smtp_auth_username: 'api'
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'JobGuard MLOps <@@SMTP_USERNAME@@>'
+  smtp_auth_username: '@@SMTP_USERNAME@@'
   smtp_auth_password: '@@SMTP_PASSWORD@@'
   smtp_require_tls: true
   resolve_timeout: 5m

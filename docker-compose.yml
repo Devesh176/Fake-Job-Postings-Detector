@@ -146,8 +146,8 @@ services:
           - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.template.yml:ro
     # Override the default Alertmanager entrypoint
     entrypoint: ""
-    command: /bin/sh -c "sed 's|@@SMTP_PASSWORD@@|${SMTP_PASSWORD}|g; s|@@ALERT_EMAIL@@|${ALERT_TO_EMAIL}|g' /etc/alertmanager/alertmanager.template.yml > /tmp/alertmanager.yml && /bin/alertmanager --config.file=/tmp/alertmanager.yml --storage.path=/alertmanager"
-
+    command: /bin/sh -c "sed 's|@@SMTP_USERNAME@@|${SMTP_USERNAME}|g; s|@@SMTP_PASSWORD@@|${SMTP_PASSWORD}|g; s|@@ALERT_EMAIL@@|${ALERT_EMAIL}|g' /etc/alertmanager/alertmanager.template.yml > /tmp/alertmanager.yml && /bin/alertmanager --config.file=/tmp/alertmanager.yml --storage.path=/alertmanager"
+  
   prometheus:
     image: prom/prometheus:latest
     ports:
