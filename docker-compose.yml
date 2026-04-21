@@ -143,14 +143,10 @@ services:
     ports:
       - "9093:9093"
     volumes:
-      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    command: >
-          /bin/sh -c "
-          sed -e 's|@@SMTP_PASSWORD@@|${SMTP_PASSWORD}|g' 
-              -e 's|@@ALERT_EMAIL@@|${ALERT_EMAIL}|g' 
-              /etc/alertmanager/alertmanager.template.yml > /tmp/alertmanager.yml 
-          && /bin/alertmanager --config.file=/tmp/alertmanager.yml --storage.path=/alertmanager
-          "
+          - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.template.yml:ro
+    # Override the default Alertmanager entrypoint
+    entrypoint: ""
+    command: /bin/sh -c "sed 's|@@SMTP_PASSWORD@@|${SMTP_PASSWORD}|g; s|@@ALERT_EMAIL@@|${ALERT_TO_EMAIL}|g' /etc/alertmanager/alertmanager.template.yml > /tmp/alertmanager.yml && /bin/alertmanager --config.file=/tmp/alertmanager.yml --storage.path=/alertmanager"
 
   prometheus:
     image: prom/prometheus:latest

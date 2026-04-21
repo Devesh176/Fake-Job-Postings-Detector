@@ -138,8 +138,8 @@ stages:
     outs:
     - path: data/production/metadata.json
       hash: md5
-      md5: 032d9a9ad0e1179a3a1d9fbbfa75930a
-      size: 331
+      md5: 16967aee14a9d3332248ed97ef0c8ace
+      size: 383
     - path: data/production/model.pkl
       hash: md5
       md5: a77000c3b13237701134c912f5cc761b
