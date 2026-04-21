@@ -21,7 +21,7 @@ from pydantic import BaseModel
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
 import sqlite3
 from cryptography.fernet import Fernet
-
+import requests as req
 # Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 logger = logging.getLogger(__name__)
@@ -242,21 +242,44 @@ def predict(posting: JobPosting):
     REQUEST_COUNT.labels(endpoint="/predict", method="POST", status="200").inc()
     start = time.time()
     try:
+        # 1. Transform text to TF-IDF numerical features FIRST, regardless of mode
+        X = build_features(posting)
+        
         if MODEL_SERVE_MODE == "mlflow":
             import requests as req
-            payload = {"dataframe_records": [{"title": posting.title, "description": posting.description, "company_profile": posting.company_profile or "", "requirements": posting.requirements or "", "employment_type": posting.employment_type or "", "has_company_logo": posting.has_company_logo, "has_questions": posting.has_questions, "salary_range": posting.salary_range or ""}]}
+            
+            # 2. Convert the TF-IDF sparse matrix/array to a native Python list
+            inputs_list = X.toarray().tolist() if hasattr(X, "toarray") else X.tolist()
+            
+            # 3. Send the numerical array to MLflow
+            payload = {"inputs": inputs_list}
             res = req.post(MLFLOW_SERVE_URL, json=payload, timeout=5)
-            res.raise_for_status()
-            fraud_prob = float(res.json()["predictions"][0])
+            
+            # CRITICAL: Expose the real MLflow error if it fails!
+            if res.status_code != 200:
+                raise Exception(f"MLflow Server Error ({res.status_code}): {res.text}")
+            
+            # 4. Parse the prediction
+            prediction_result = res.json()["predictions"][0]
+            
+            # Note: A raw MLflow sklearn model returns predict() [e.g., 0 or 1],
+            # rather than predict_proba() unless specifically configured.
+            if isinstance(prediction_result, list):
+                fraud_prob = float(prediction_result[1])
+            else:
+                fraud_prob = float(prediction_result)
+                
         else:
             if model is None: raise HTTPException(status_code=503, detail="Local model not loaded")
-            X = build_features(posting)
             fraud_prob = float(model.predict_proba(X)[0][1])
             
         return build_response(posting, fraud_prob, time.time() - start)
+        
     except Exception as e:
         ERROR_COUNT.inc()
         REQUEST_COUNT.labels(endpoint="/predict", method="POST", status="500").inc()
+        # This will now print the actual MLflow error text to the UI/logs!
+        logger.error(f"Prediction failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/feedback")

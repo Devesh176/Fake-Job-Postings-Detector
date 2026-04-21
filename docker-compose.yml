@@ -38,29 +38,29 @@ services:
       interval: 10s
       retries: 5
 
-  # mlflow_model:
-  #   build:
-  #     context: .
-  #     dockerfile: infra/Dockerfile.mlflow
-  #   ports:
-  #     - "5001:5001"
-  #   environment:
-  #     MLFLOW_TRACKING_URI: http://mlflow:5000
-  #   volumes:
-  #     - ./mlflow_artifacts:/home/guest/tools/Fake-Job-Postings-Detector/mlflow_artifacts  # ✅ ADD THIS
-  #   command: >
-  #     mlflow models serve
-  #     -m models:/first_model@production
-  #     --host 0.0.0.0
-  #     --port 5001
-  #     --env-manager=local
-  #   depends_on:
-  #     mlflow:
-  #       condition: service_healthy
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
-  #     interval: 10s
-  #     retries: 5
+  mlflow_model:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.mlflow
+    ports:
+      - "5001:5001"
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - ./mlflow_artifacts:/home/guest/tools/Fake-Job-Postings-Detector/mlflow_artifacts  
+    command: >
+      mlflow models serve
+      -m models:/first_model@production
+      --host 0.0.0.0
+      --port 5001
+      --env-manager=local
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 10s
+      retries: 5
 
   api:
     build:
