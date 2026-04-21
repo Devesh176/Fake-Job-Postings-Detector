@@ -2,7 +2,7 @@ global:
   smtp_smarthost: 'live.smtp.mailtrap.io:2525'
   smtp_from: 'hello@demomailtrap.co'
   smtp_auth_username: 'api'
-  smtp_auth_password: 'your_mailtrap_api'
+  smtp_auth_password: '@@SMTP_PASSWORD@@'
   smtp_require_tls: true
   resolve_timeout: 5m
 
@@ -39,7 +39,7 @@ route:
 receivers:
   - name: 'gmail-alerts'
     email_configs:
-      - to: 'me22b176@smail.iitm.ac.in'
+      - to: '@@ALERT_EMAIL@@'
         send_resolved: true
         headers:
           Subject: '[JobGuard MLOps] {{ .Status | toUpper }} — {{ .GroupLabels.alertname }}'
