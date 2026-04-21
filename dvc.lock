@@ -85,17 +85,17 @@ stages:
       size: 25262
     - path: src/model/train_dvc.py
       hash: md5
-      md5: 41e1ca4479a78d007cfc07e153c82754
-      size: 2309
+      md5: fd205370de66fd0f3cf9dc475e7364e9
+      size: 2391
     outs:
     - path: data/processed/metrics.json
       hash: md5
-      md5: e9f06fbfa546f061b3d2e3d0e9e78f66
-      size: 196
+      md5: 61b9710226c3bd2ecf120821e43c4d0c
+      size: 205
     - path: data/processed/model.pkl
       hash: md5
-      md5: a77000c3b13237701134c912f5cc761b
-      size: 1715745
+      md5: 0fe8537fcf9ae5921e7bdef5138e150d
+      size: 1455164
   evaluate:
     cmd: python3 src/model/evaluate.py
     deps:
@@ -105,8 +105,8 @@ stages:
       size: 4711703
     - path: data/processed/model.pkl
       hash: md5
-      md5: a77000c3b13237701134c912f5cc761b
-      size: 1715745
+      md5: 0fe8537fcf9ae5921e7bdef5138e150d
+      size: 1455164
     - path: data/processed/y_test.csv
       hash: md5
       md5: d76dbd300d39be07941f58e2e3b658e2
@@ -118,19 +118,19 @@ stages:
     outs:
     - path: data/processed/eval_metrics.json
       hash: md5
-      md5: c4d3b534373ecd2cfadce9b2c8d39151
-      size: 185
+      md5: 5f91965c860c0778532a4b0a68b8c42b
+      size: 184
   register:
     cmd: python3 src/model/register_dvc.py
     deps:
     - path: data/processed/metrics.json
       hash: md5
-      md5: e9f06fbfa546f061b3d2e3d0e9e78f66
-      size: 196
+      md5: 61b9710226c3bd2ecf120821e43c4d0c
+      size: 205
     - path: data/processed/model.pkl
       hash: md5
-      md5: a77000c3b13237701134c912f5cc761b
-      size: 1715745
+      md5: 0fe8537fcf9ae5921e7bdef5138e150d
+      size: 1455164
     - path: data/processed/tfidf_vectorizer.pkl
       hash: md5
       md5: 58858b44348b941c1c2ec23a9b626c9c
@@ -138,12 +138,12 @@ stages:
     outs:
     - path: data/production/metadata.json
       hash: md5
-      md5: 16967aee14a9d3332248ed97ef0c8ace
-      size: 383
+      md5: 34b71e18026c0b46a6cc665391d33c32
+      size: 340
     - path: data/production/model.pkl
       hash: md5
-      md5: a77000c3b13237701134c912f5cc761b
-      size: 1715745
+      md5: 0fe8537fcf9ae5921e7bdef5138e150d
+      size: 1455164
     - path: data/production/tfidf_vectorizer.pkl
       hash: md5
       md5: 58858b44348b941c1c2ec23a9b626c9c

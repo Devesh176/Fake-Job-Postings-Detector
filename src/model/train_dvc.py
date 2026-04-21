@@ -26,7 +26,9 @@ def train(n_estimators=300, max_depth=6, learning_rate=0.1, subsample=0.8):
         'random_state':  42,
     }
 
-    sample_weights = compute_sample_weight('balanced', y_train)
+    # sample_weights = compute_sample_weight('balanced', y_train)
+    # gentle 5:1 penalty:
+    sample_weights = np.where(y_train == 1, 5.0, 1.0)
     model = GradientBoostingClassifier(**params)
     model.fit(X_train, y_train, sample_weight=sample_weights)
 
