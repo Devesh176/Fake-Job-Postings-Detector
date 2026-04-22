@@ -11,7 +11,7 @@ import time
 import pickle
 from datetime import datetime
 from typing import Optional
-
+from typing import Literal
 import scipy.sparse as sp
 import numpy as np
 from fastapi import FastAPI, HTTPException, Request
@@ -128,6 +128,7 @@ async def startup():
     init_db()
     load_model()
 
+
 # Schemas
 class JobPosting(BaseModel):
     title: str
@@ -154,7 +155,7 @@ class PredictionResponse(BaseModel):
 
 class FeedbackSchema(BaseModel):
     prediction_id: str
-    correct_label: str
+    correct_label: Literal["correct", "incorrect"]
 
 # Helper: Feature Engineering (matches your preprocess.py)
 def build_features(posting: JobPosting):
@@ -195,6 +196,35 @@ def get_key_signals(posting: JobPosting, prob: float) -> list:
 # Endpoints
 @app.get("/health")
 def health(): return {"status": "healthy"}
+
+@app.get("/model-info")
+def get_model_info():
+    """Returns the actual DVC-tracked metadata generated during training."""
+    import os, json
+    
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    metadata_path = os.path.join(BASE_DIR, 'data', 'production', 'metadata.json')
+    
+    if os.path.exists(metadata_path):
+        with open(metadata_path, 'r') as f:
+            return json.load(f)
+    return {"status": "metadata_unavailable", "message": "Run dvc repro first."}
+
+
+@app.get("/drift-status")
+def get_drift_status():
+    """Returns the live drift monitoring configuration."""
+    # Since drift is calculated asynchronously by Airflow and PromQL, 
+    # the API's job is simply to confirm what baseline it is comparing against.
+    if baselines is None:
+        return {"status": "unmonitored", "message": "Baseline missing. Drift detection offline."}
+        
+    return {
+        "status": "monitored",
+        "baseline_version": baselines.get("run_id", "latest"),
+        "features_tracked": list(baselines.get("dataset", {}).keys()),
+        "observability": "Monitored via Grafana / Alertmanager"
+    }
 
 @app.get("/ready")
 def ready():
