@@ -11,7 +11,7 @@ import time
 import pickle
 from datetime import datetime
 from typing import Optional
-
+from typing import Literal
 import scipy.sparse as sp
 import numpy as np
 from fastapi import FastAPI, HTTPException, Request
@@ -155,7 +155,7 @@ class PredictionResponse(BaseModel):
 
 class FeedbackSchema(BaseModel):
     prediction_id: str
-    correct_label: str
+    correct_label: Literal["correct", "incorrect"]
 
 # Helper: Feature Engineering (matches your preprocess.py)
 def build_features(posting: JobPosting):
