@@ -30,11 +30,11 @@ stages:
       - data/processed/y_test.csv
 
   train:
-    cmd: python3 src/model/train_dvc.py
+    cmd: python3 src/model/train.py
     deps:
       - data/processed/X_train.npz
       - data/processed/y_train.csv
-      - src/model/train_dvc.py
+      - src/model/train.py
     outs:
       - data/processed/model.pkl
     metrics:
