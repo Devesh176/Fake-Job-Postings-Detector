@@ -106,22 +106,26 @@ Use `--env-manager=local` if you do not want to rely on Conda, and use `--no-con
 Train:
 ```bash
 export MLFLOW_PYTHON_BIN=/usr/bin/python3
+export MLFLOW_TRACKING_URI="http://localhost:5000"
 mlflow run . -e train --env-manager=local --no-conda --experiment-name fake-job-detector-exp --run-name my_exp \
   -P n_estimators=200 -P max_depth=5 -P learning_rate=0.1 -P subsample=0.8
 ```
 
 Evaluate:
 ```bash
+export MLFLOW_TRACKING_URI="http://localhost:5000"
 mlflow run . -e evaluate --env-manager=local --no-conda --experiment-name fake-job-detector-exp
 ```
 
 Register:
 ```bash
+export MLFLOW_TRACKING_URI="http://localhost:5000"
 mlflow run . -e register --env-manager=local --no-conda --experiment-name fake-job-detector-exp
 ```
 
 Or run the full sequence:
 ```bash
+export MLFLOW_TRACKING_URI="http://localhost:5000"
 mlflow run . -e train --env-manager=local --no-conda --experiment-name fake-job-detector-exp --run-name my_exp \
   -P n_estimators=200 -P max_depth=5 -P learning_rate=0.1 -P subsample=0.8 && \
 mlflow run . -e evaluate --env-manager=local --no-conda --experiment-name fake-job-detector-exp && \
