@@ -77,16 +77,16 @@ stages:
     deps:
     - path: data/processed/X_train.npz
       hash: md5
-      md5: d190592277629b3bd50db9f63b052eaf
-      size: 19237231
+      md5: 1cb7dce1b0a99114d6e5cddc67dc37c5
+      size: 19283234
     - path: data/processed/y_train.csv
       hash: md5
-      md5: a635af74faa7406023094711058158b9
-      size: 25262
+      md5: 1a69e56028bf6f0eef9fc12be3acc943
+      size: 25268
     - path: src/model/train.py
       hash: md5
-      md5: cf38cc1943710a5035121c3bf6b66cb8
-      size: 5652
+      md5: 64be844d2ac0cbba17db66c28e9c381a
+      size: 5915
     outs:
     - path: data/processed/metrics.json
       hash: md5
@@ -101,16 +101,16 @@ stages:
     deps:
     - path: data/processed/X_test.npz
       hash: md5
-      md5: 0b33df4ce5d904ca5f1c535838dd38c8
-      size: 4711703
+      md5: ec7e589bcdf55a8075d416f84fc0f350
+      size: 4701760
     - path: data/processed/model.pkl
       hash: md5
       md5: d7e90fd8e1a616aba7c0997ac20d8685
       size: 701924
     - path: data/processed/y_test.csv
       hash: md5
-      md5: d76dbd300d39be07941f58e2e3b658e2
-      size: 6318
+      md5: b5fa820263af9d53f96a66ea3fca3fd0
+      size: 6320
     - path: src/model/evaluate.py
       hash: md5
       md5: c898589524086f6a10440e3f8886e2af
@@ -133,8 +133,8 @@ stages:
       size: 701924
     - path: data/processed/tfidf_vectorizer.pkl
       hash: md5
-      md5: 58858b44348b941c1c2ec23a9b626c9c
-      size: 200100
+      md5: af96fd7507455b6c331d549cff200bb6
+      size: 200477
     outs:
     - path: data/production/metadata.json
       hash: md5
@@ -153,8 +153,8 @@ stages:
     deps:
     - path: data/processed/train_processed.csv
       hash: md5
-      md5: 308430f76b281154d2257a06011c63d2
-      size: 72786491
+      md5: 85b17c46e20ad917df55ea7fa426d694
+      size: 72879185
     - path: src/pipeline/eda_stats.py
       hash: md5
       md5: d32aa58bc21cd549a27c4999a9b4dbea
@@ -164,3 +164,4 @@ stages:
       hash: md5
       md5: f583387093b69fe370767dfbdbbcd1cb
       size: 12483
+      isexec: true
