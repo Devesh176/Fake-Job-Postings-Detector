@@ -34,9 +34,10 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/version"]
       interval: 10s
       retries: 5
+      start_period: 30s
 
   mlflow_model:
     build:
@@ -58,9 +59,10 @@ services:
       mlflow:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5001/ping"] # Must be /ping 
       interval: 10s
       retries: 5
+      start_period: 60s
 
   api:
     build:
@@ -130,6 +132,9 @@ services:
           AIRFLOW__SMTP__SMTP_MAIL_FROM: "JobGuard Airflow <${SMTP_USERNAME}>"
           AIRFLOW__SMTP__SMTP_SSL: "False"
           AIRFLOW__SMTP__SMTP_STARTTLS: "True"
+      
+          AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT: 300
+          AIRFLOW__WEBSERVER__WEB_SERVER_WORKER_TIMEOUT: 300
           
           # Dynamic DAG Variables 
           AIRFLOW_VAR_ALERT_EMAIL: ${ALERT_EMAIL}
@@ -137,12 +142,10 @@ services:
       postgres:
         condition: service_healthy
     command: >
-      bash -c "airflow db init &&
-              sleep 5 &&
-              airflow users create --username admin --password admin
-              --firstname Admin --lastname User --role Admin
-              --email admin@example.com || true &&
-              airflow webserver & airflow scheduler"
+      bash -c "airflow db migrate &&
+      airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+      airflow scheduler & 
+      airflow webserver"
 
   alertmanager:
     image: prom/alertmanager:latest

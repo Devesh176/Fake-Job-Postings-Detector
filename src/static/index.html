@@ -806,8 +806,8 @@
             <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
                 <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 8px;">Was this prediction correct?</div>
                 <div style="display: flex; gap: 8px;" id="feedback-buttons">
-                    <button class="btn btn-ghost btn-sm" onclick="submitFeedback('Legitimate')">✅ It's Legitimate</button>
-                    <button class="btn btn-ghost btn-sm" onclick="submitFeedback('Fraudulent')">⚠️ It's Fraudulent</button>
+                    <button class="btn btn-ghost btn-sm" onclick="submitFeedback('correct')">✅ It's Legitimate</button>
+                    <button class="btn btn-ghost btn-sm" onclick="submitFeedback('incorrect')">⚠️ It's Fraudulent</button>
                 </div>
                 <div id="feedback-thanks" style="display:none; color:var(--green); font-size:0.85rem; margin-top:8px;">
                     Thanks! Feedback logged for model retraining.
