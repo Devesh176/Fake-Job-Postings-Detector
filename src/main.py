@@ -157,7 +157,7 @@ class FeedbackSchema(BaseModel):
     prediction_id: str
     correct_label: Literal["correct", "incorrect"]
 
-# Helper: Feature Engineering (matches your preprocess.py)
+# Helper: Feature Engineering (matches preprocess.py)
 def build_features(posting: JobPosting):
     combined_text = " ".join([
         posting.title or "", posting.location or "", posting.description or "",

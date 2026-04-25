@@ -1,6 +1,6 @@
 [core]
     remote = local_remote
 ['remote "local_remote"']
-    url = /home/guest/tools/dvc-remote/tmp/dvc-remote
+    url = /home/duser/Videos/dvc-remote
 ['remote "airflow_remote"']
     url = /opt/airflow/dvc-remote
