@@ -90,12 +90,12 @@ stages:
     outs:
     - path: data/processed/metrics.json
       hash: md5
-      md5: 532200d1f6a4892a5d70a343a0963341
-      size: 303
+      md5: 25a1388b55cba2854d4173e5d2cb3e1b
+      size: 304
     - path: data/processed/model.pkl
       hash: md5
-      md5: d7e90fd8e1a616aba7c0997ac20d8685
-      size: 701924
+      md5: db407d1639526e523a549ce3bb7e4627
+      size: 680464
   evaluate:
     cmd: python3 src/model/evaluate.py
     deps:
@@ -105,8 +105,8 @@ stages:
       size: 4701760
     - path: data/processed/model.pkl
       hash: md5
-      md5: d7e90fd8e1a616aba7c0997ac20d8685
-      size: 701924
+      md5: db407d1639526e523a549ce3bb7e4627
+      size: 680464
     - path: data/processed/y_test.csv
       hash: md5
       md5: b5fa820263af9d53f96a66ea3fca3fd0
@@ -118,19 +118,19 @@ stages:
     outs:
     - path: data/processed/eval_metrics.json
       hash: md5
-      md5: 30bdb86234d2bd7d5c91e03d4e0045bb
-      size: 185
+      md5: 3e3d7af3b1bcaee5a5ce34226de0c52f
+      size: 171
   register:
     cmd: python3 src/model/register_dvc.py
     deps:
     - path: data/processed/metrics.json
       hash: md5
-      md5: 532200d1f6a4892a5d70a343a0963341
-      size: 303
+      md5: 25a1388b55cba2854d4173e5d2cb3e1b
+      size: 304
     - path: data/processed/model.pkl
       hash: md5
-      md5: d7e90fd8e1a616aba7c0997ac20d8685
-      size: 701924
+      md5: db407d1639526e523a549ce3bb7e4627
+      size: 680464
     - path: data/processed/tfidf_vectorizer.pkl
       hash: md5
       md5: af96fd7507455b6c331d549cff200bb6
@@ -138,16 +138,16 @@ stages:
     outs:
     - path: data/production/metadata.json
       hash: md5
-      md5: 242bd8343c96c619f92563df3ee43c84
-      size: 442
+      md5: 9537d7b5eb7cee936bc21e38fbdd0ad4
+      size: 443
     - path: data/production/model.pkl
       hash: md5
-      md5: d7e90fd8e1a616aba7c0997ac20d8685
-      size: 701924
+      md5: db407d1639526e523a549ce3bb7e4627
+      size: 680464
     - path: data/production/tfidf_vectorizer.pkl
       hash: md5
-      md5: 58858b44348b941c1c2ec23a9b626c9c
-      size: 200100
+      md5: af96fd7507455b6c331d549cff200bb6
+      size: 200477
   baselines:
     cmd: python3 src/pipeline/eda_stats.py
     deps:
