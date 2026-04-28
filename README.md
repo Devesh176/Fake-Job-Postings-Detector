@@ -279,7 +279,7 @@ curl -X POST http://localhost:8000/predict \
     "employment_type": "Full-time",
     "has_company_logo": 1,
     "has_questions": 1,
-    "salary_range": "$120k-$150k"
+    "salary_range": "$120k-$150k",
     "user_label": "Fraudulent" 
   }'
   # Note: user_label: is optional and can take two values "Fradulent" or "Legitimate"
