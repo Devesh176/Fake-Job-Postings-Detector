@@ -152,6 +152,9 @@ print(f"AIRFLOW_FERNET_KEY={base64.urlsafe_b64encode(os.urandom(32)).decode()}")
 ### 3. Initialize DVC (Data Version Control)
 The raw data and heavy model artifacts are tracked by DVC. To link your local repository to the data:
 ```bash
+# 0. pull the dvc-remote.zip
+git lfs pull
+
 # 1. Unzip the local remote directory
 unzip dvc-remote.zip
 
