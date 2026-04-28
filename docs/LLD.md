@@ -48,7 +48,7 @@ Our `train.py` script uses a "Y-Shaped" architecture to serve two masters: local
 
 * **Flow:** Extracts user-labeled logs -> Decrypts data -> Merges with root training data -> Bypasses DVC locks to swap data -> Runs dvc repro -f up to feature engineering.
 
-* **MLflow Handoff:** Executes the training script with `--use-mlflow`, streaming the new model directly to the jobguard-automated-retraining registry.
+* **MLflow Handoff:** Executes the training script with `--use-mlflow`, streaming the new model directly to the jobguard-automated-retraining-exp registry.
 
 * **Human-in-the-Loop:** Pings the admin with an email detailing the new F1/AUC scores and instructions for running the final dvc push locally upon approval.
 
@@ -96,39 +96,40 @@ We defined strict PromQL alerting rules in `alert_rules.yml` to catch both infra
 
 
 ```text
-+-------------------------------------------------------------------------+
-|                   Fake Job Detector - Architecture                      |
-+-------------------------------------------------------------------------+
++-----------------------------------------------------------------------------------------------------------+
+|                                      Fake Job Detector - Architecture                                     |
++-----------------------------------------------------------------------------------------------------------+
 
-         [ End Users / UI ]
-                 | (HTTP POST /predict)
-                 v
-+----------------------------------+        +---------------------------+
-|         FastAPI Backend          |=======>|   MLflow Model Serving    |
-|  (Routing, Telemetry, Privacy)   |        |   (Port 5001 - Champion)  |
-+----------------------------------+        +---------------------------+
-      |                   |
-(Encrypted Logs)    (Scrape Metrics)
-      |                   |
-      v                   v
-+-------------+   +----------------+        +---------------------------+
-| SQLite DB   |   | Prometheus     |=======>| Grafana / Alertmanager    |
-| (Inference) |   | (Time-series)  |        | (Dashboards & Alerts)     |
-+-------------+   +----------------+        +---------------------------+
-      |
-(Airflow Extracts Labeled Logs)
-      |
-      v
-+----------------------------------+        +---------------------------+
-|      Airflow Orchestrator        |=======>| MLflow Tracking Server    |
-| (Data Prep, DVC Repro, Training) |        | (Port 5000 - Experiments) |
-+----------------------------------+        +---------------------------+
-      |                   |
-(State & Data)      (Metadata)
-      |                   |
-      v                   v
-+-------------+   +-----------------+
-| Local Files |   | PostgreSQL      |
-| (DVC / Git) |   | (Airflow/MLflow)|
-+-------------+   +-----------------+
-```
+                                    [ End Users / UI ]
+                                          | (HTTP POST /predict)
+                                          v
++----------------------+         +----------------------------------+        +-----------------------------+
+|         Local        |<========|       FastAPI Backend            |=======>|   MLflow Model Serving      |
+|   (/data/production) |         | (Routing, Telemetry, Privacy)    |        |   (Port 5001 - @Production) |<--+
++----------------------+         +----------------------------------+        +-----------------------------+   |
+            ^                        |                   |                                                     |
+            |                  (Encrypted Logs)    (Scrape Metrics)                                            |
+            |                        |                   |                                                     |
+            |                        v                   v                                                     |
+            |                  +-------------+   +----------------+        +---------------------------+       |   
+            |                  | SQLite DB   |   | Prometheus     |=======>| Grafana / Alertmanager    |       |(Model
+            |                  |             |   |                |        |                           |       |  Registry)
+            |                  | (Inference) |   | (Time-series)  |        | (Dashboards & Alerts)     |       |
+            |                  +-------------+   +----------------+        +---------------------------+       |
+            |                        |                                                                         |
+            |                  (Airflow Extracts Labeled Logs)                                                 |
+            |                        |                                                                         |
+            |                        v                                                                         |
+            |                  +----------------------------------+        +---------------------------+       |
+            |                  |      Airflow Orchestrator        |=======>| MLflow Tracking Server    |_______|
+            |                  | (Data Prep, DVC Repro, Training) |        | (Port 5000 - Experiments) |
+            |                  +----------------------------------+        +---------------------------+
+            |                        |                   |
+            |                  (State & Data)      (Metadata)
+            |                        |                   |
+            |                        v                   v
+            |                  +-------------+   +-----------------+
+            |__________________| Local Files |   | PostgreSQL      |
+                               | (DVC / Git) |   | (Airflow/MLflow)|
+                              +-------------+   +-----------------+
+                              ```

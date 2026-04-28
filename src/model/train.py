@@ -87,7 +87,7 @@ def train(n_estimators=200, max_depth=5, learning_rate=0.1, subsample=0.8, use_m
                 if exp is None:
                     client.create_experiment(
                         name=experiment_name,
-                        artifact_location=f"mlflow-artifacts:/{experiment_name}"
+                        artifact_location=f"/home/guest/tools/Fake-Job-Postings-Detector/mlflow_artifacts/{experiment_name}"
                     )
             except Exception as e:
                 pass

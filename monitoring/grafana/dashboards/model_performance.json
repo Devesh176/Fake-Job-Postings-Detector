@@ -89,7 +89,7 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [
-            { "options": { "0": { "text": "Local", "color": "purple" }, "1": { "text": "MLflow", "color": "green" } }, "type": "value" }
+            { "options": { "0": { "text": "MLflow", "color": "purple" }, "1": { "text": "Local", "color": "green" } }, "type": "value" }
           ],
           "thresholds": { "steps": [{ "color": "green", "value": 0 }] }
         }

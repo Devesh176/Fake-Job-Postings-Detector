@@ -1,0 +1,6 @@
+outs:
+- md5: a230692de933a38c2335c1795da659a5
+  size: 1454
+  isexec: true
+  hash: md5
+  path: inference_labeled.csv

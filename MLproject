@@ -1,4 +1,4 @@
-name: fake-job-detector-experiment
+name: fake-job-detector-exp
 
 python_env: python_env.yaml
 

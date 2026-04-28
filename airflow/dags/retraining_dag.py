@@ -171,7 +171,7 @@ def build_review_email(**kwargs):
         <h3>Action Required:</h3>
         <ol style="line-height:1.6;">
             <li>Navigate to your <strong><a href="http://localhost:5000">MLflow UI</a></strong>.</li>
-            <li>Review the newly generated metrics in the <code>jobguard-automated-retraining</code> experiment.</li>
+            <li>Review the newly generated metrics in the <code>jobguard-automated-retraining-exp</code> experiment.</li>
             <li>If the metrics meet production standards, assign it the <code>@champion</code> alias.</li>
             <li><strong>Finalize the Data Update:</strong> Open your host machine terminal and run:
                 <div style="background:#2d2d2d; color:#fff; padding:10px; border-radius:5px; margin-top:5px; font-family:monospace;">
@@ -218,7 +218,7 @@ with DAG(
         cd {PROJECT_DIR}
         export GIT_PYTHON_REFRESH=quiet
         export MLFLOW_TRACKING_URI="http://mlflow:5000"
-        export MLFLOW_EXPERIMENT_NAME="jobguard-automated-retraining"
+        export MLFLOW_EXPERIMENT_NAME="jobguard-automated-retraining-exp"
         
         # Fix the Git "Dubious Ownership" error for mounted volumes!
         git config --global --add safe.directory {PROJECT_DIR}

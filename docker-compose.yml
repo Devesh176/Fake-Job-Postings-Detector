@@ -51,7 +51,7 @@ services:
       - ./mlflow_artifacts:/home/guest/tools/Fake-Job-Postings-Detector/mlflow_artifacts  
     command: >
       mlflow models serve
-      -m models:/first_model@production
+      -m models:/FakeJobDetector_GBC@production
       --host 0.0.0.0
       --port 5001
       --env-manager=local
@@ -62,7 +62,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:5001/ping"] # Must be /ping 
       interval: 10s
       retries: 5
-      start_period: 60s
+      start_period: 120s
 
   api:
     build:
@@ -80,8 +80,8 @@ services:
     depends_on:
       mlflow:
         condition: service_healthy
-      # mlflow_model:
-        # condition: service_healthy
+      mlflow_model:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -112,6 +112,7 @@ services:
       - ./dvc.yaml:/opt/airflow/dvc.yaml  # DVC pipeline
       - ./dvc.lock:/opt/airflow/dvc.lock  # DVC lock
       - ./scripts:/opt/airflow/scripts    # Pipeline scripts
+      - ./mlflow_artifacts:/home/guest/tools/Fake-Job-Postings-Detector/mlflow_artifacts
     environment:
           # Core Airflow Settings 
           AIRFLOW__CORE__EXECUTOR: LocalExecutor
